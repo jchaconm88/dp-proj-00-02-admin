@@ -1,0 +1,14 @@
+@import "tailwindcss";
+@import "primeicons/primeicons.css";
+
+@variant dark (&:where(.dark, .dark *));
+
+/* Minimal base while we extract full theme to packages/ui */
+html {
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+}
+

@@ -1,0 +1,10 @@
+[
+  { "title": "Dashboard", "icon": "home", "link": "/", "home": true, "permission": ["view", "dashboard"] },
+  { "title": "Cuentas", "icon": "briefcase", "link": "/accounts", "permission": ["view", "account"] },
+  { "title": "Empresas", "icon": "building", "link": "/companies", "permission": ["view", "company"] },
+  { "title": "Planes", "icon": "tags", "link": "/plans", "permission": ["view", "plan"] },
+  { "title": "Suscripciones", "icon": "calendar", "link": "/subscriptions", "permission": ["view", "subscription"] },
+  { "title": "Billing (Uso)", "icon": "chart-line", "link": "/billing/usage", "permission": ["view", "billing"] },
+  { "title": "Onboarding", "icon": "sparkles", "link": "/onboarding", "permission": ["view", "onboarding"] }
+]
+
