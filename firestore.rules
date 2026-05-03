@@ -1,0 +1,76 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function myUid() {
+      return request.auth.uid;
+    }
+
+    function myUserDoc() {
+      return get(/databases/$(database)/documents/users/$(myUid())).data;
+    }
+
+    function myAccountId() {
+      return isSignedIn() ? (myUserDoc().accountId) : null;
+    }
+
+    function sameAccount(resourceData) {
+      return isSignedIn()
+        && myAccountId() != null
+        && resourceData.accountId == myAccountId();
+    }
+
+    // ── Users (Admin) ────────────────────────────────────────────────
+    // Bootstrap: el primer usuario debe poder crearse a sí mismo.
+    match /users/{uid} {
+      allow read: if isSignedIn() && uid == myUid();
+      allow create: if isSignedIn() && uid == myUid();
+      allow update: if isSignedIn() && uid == myUid();
+      allow delete: if false;
+    }
+
+    // ── Roles (por accountId) ───────────────────────────────────────
+    match /roles/{roleId} {
+      allow read: if isSignedIn() && sameAccount(resource.data);
+      allow create, update, delete: if isSignedIn() && sameAccount(request.resource.data);
+    }
+
+    // ── Onboarding runs ─────────────────────────────────────────────
+    match /onboardingRuns/{runId} {
+      allow read: if isSignedIn() && resource.data.createdBy == myUid();
+      allow create: if isSignedIn() && request.resource.data.createdBy == myUid();
+      allow update: if isSignedIn() && resource.data.createdBy == myUid();
+      allow delete: if false;
+    }
+
+    // ── Platform collections (scope por accountId) ──────────────────
+    // accounts: 1 doc por cuenta (docId == accountId)
+    match /accounts/{accountId} {
+      allow read, write: if isSignedIn() && accountId == myAccountId();
+    }
+
+    match /companies/{companyId} {
+      allow read: if isSignedIn() && sameAccount(resource.data);
+      allow create, update, delete: if isSignedIn() && sameAccount(request.resource.data);
+    }
+
+    match /company-users/{id} {
+      allow read: if isSignedIn() && sameAccount(resource.data);
+      allow create, update, delete: if isSignedIn() && sameAccount(request.resource.data);
+    }
+
+    match /saas-plans/{planId} {
+      allow read: if isSignedIn() && sameAccount(resource.data);
+      allow create, update, delete: if isSignedIn() && sameAccount(request.resource.data);
+    }
+
+    match /subscriptions/{id} {
+      allow read: if isSignedIn() && sameAccount(resource.data);
+      allow create, update, delete: if isSignedIn() && sameAccount(request.resource.data);
+    }
+  }
+}
+

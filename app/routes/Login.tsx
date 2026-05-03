@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { useNavigate } from "react-router";
+import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { Link, useNavigate } from "react-router";
 import { auth } from "~/lib/firebase";
 
 export default function LoginPage() {
@@ -16,9 +16,23 @@ export default function LoginPage() {
     setError(null);
     try {
       await signInWithEmailAndPassword(auth, email.trim(), password);
-      navigate("/");
+      navigate("/onboarding");
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo iniciar sesión");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signInGoogle = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      navigate("/onboarding");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo iniciar sesión con Google");
     } finally {
       setLoading(false);
     }
@@ -62,6 +76,22 @@ export default function LoginPage() {
         >
           {loading ? "Ingresando…" : "Ingresar"}
         </button>
+
+        <button
+          type="button"
+          onClick={signInGoogle}
+          disabled={loading}
+          className="w-full rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-2 text-sm font-bold disabled:opacity-50"
+        >
+          Continuar con Google
+        </button>
+
+        <div className="text-center text-sm text-white/70">
+          ¿No tienes cuenta?{" "}
+          <Link to="/registro" className="text-white underline underline-offset-4 hover:opacity-90">
+            Crear usuario
+          </Link>
+        </div>
       </form>
     </div>
   );

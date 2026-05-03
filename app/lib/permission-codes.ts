@@ -1,3 +1,3 @@
-export { collectPermissionCodes, hasPermissionCode, normalizePermissionCode } from "@dp/shared";
-export type { PermissionMap, PermissionSource } from "@dp/shared";
+export { collectPermissionCodes, hasPermissionCode, normalizePermissionCode } from "@jchaconm88/shared";
+export type { PermissionMap, PermissionSource } from "@jchaconm88/shared";
 

@@ -1,10 +1,48 @@
 [
-  { "title": "Dashboard", "icon": "home", "link": "/", "home": true, "permission": ["view", "dashboard"] },
-  { "title": "Cuentas", "icon": "briefcase", "link": "/accounts", "permission": ["view", "account"] },
-  { "title": "Empresas", "icon": "building", "link": "/companies", "permission": ["view", "company"] },
-  { "title": "Planes", "icon": "tags", "link": "/plans", "permission": ["view", "plan"] },
-  { "title": "Suscripciones", "icon": "calendar", "link": "/subscriptions", "permission": ["view", "subscription"] },
-  { "title": "Billing (Uso)", "icon": "chart-line", "link": "/billing/usage", "permission": ["view", "billing"] },
-  { "title": "Onboarding", "icon": "sparkles", "link": "/onboarding", "permission": ["view", "onboarding"] }
+  {
+    "title": "Inicio",
+    "enabled": true,
+    "icon": "home",
+    "link": "/",
+    "home": true,
+    "permission": ["view", "dashboard"]
+  },
+  {
+    "title": "ADMIN",
+    "enabled": true,
+    "group": true,
+    "permission": ["view", "features"]
+  },
+  {
+    "title": "Plataforma",
+    "enabled": true,
+    "icon": "folder",
+    "children": [
+      { "title": "Cuenta", "link": "/account", "permission": ["view", "account"] },
+      { "title": "Empresas", "link": "/companies", "permission": ["view", "company"] },
+      { "title": "Planes", "link": "/plans", "permission": ["view", "plan"] },
+      { "title": "Suscripciones", "link": "/subscriptions", "permission": ["view", "subscription"] },
+      { "title": "Billing (Uso)", "link": "/billing/usage", "permission": ["view", "billing"] },
+      { "title": "Usuarios Web", "link": "/web-users", "permission": ["view", "web-user"] },
+      { "title": "Roles por empresa (Web)", "link": "/company-roles", "permission": ["view", "web-role"] }
+    ]
+  },
+  {
+    "title": "Sistema",
+    "enabled": true,
+    "icon": "shield",
+    "children": [
+      { "title": "Usuarios del panel", "link": "/users", "permission": ["view", "user"] },
+      { "title": "Roles del panel", "link": "/roles", "permission": ["view", "role"] },
+      { "title": "Secuencias", "link": "/sequences", "permission": ["view", "sequence"] }
+    ]
+  },
+  {
+    "title": "Setup",
+    "enabled": true,
+    "icon": "cog",
+    "children": [
+      { "title": "Onboarding", "link": "/onboarding", "permission": ["view", "onboarding"] }
+    ]
+  }
 ]
-

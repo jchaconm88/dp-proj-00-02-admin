@@ -11,7 +11,8 @@
     "deploy": "firebase deploy --only hosting"
   },
   "dependencies": {
-    "@dp/shared": "file:../dp-proj-00-02-packages/packages/shared",
+    "@jchaconm88/shared": "0.0.1",
+    "date-fns": "^4.1.0",
     "@react-router/node": "7.12.0",
     "@react-router/serve": "7.12.0",
     "firebase": "^12.10.0",
