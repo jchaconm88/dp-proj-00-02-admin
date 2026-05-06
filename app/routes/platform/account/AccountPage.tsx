@@ -36,17 +36,6 @@ export function meta() {
   return [{ title: "Cuenta" }];
 }
 
-export function HydrateFallback() {
-  return (
-    <DpContent title="CUENTA" breadcrumbItems={["PLATAFORMA", "CUENTA"]} contentSurface={false}>
-      <div className="mt-10 flex items-center justify-center gap-3 rounded-2xl border border-[var(--dp-outline-soft)] bg-[var(--dp-surface-high)]/60 px-5 py-6 text-sm font-semibold text-[var(--dp-on-surface-soft)]">
-        <i className="pi pi-spin pi-spinner text-base" aria-hidden />
-        <span>Cargando…</span>
-      </div>
-    </DpContent>
-  );
-}
-
 export async function clientLoader(): Promise<AccountDetailsLoaderData> {
   const [accounts, subs, plans, users] = await Promise.all([
     adminFetch<AccountRecord[]>("/admin/platform/accounts"),
