@@ -9,7 +9,7 @@ Aplicación de administración (React Router + Vite + PrimeReact + Tailwind).
 
 ## Requisitos de Firebase Auth (para que el login/registro funcione)
 
-En el proyecto Firebase del **Admin** (AdminAuthProject), habilita en:
+En el **proyecto Firebase unificado por ambiente** (mismo `project_id` que web y backend en ese entorno), habilita en:
 **Firebase Console → Authentication → Sign-in method**:
 
 - **Email/Password**
@@ -25,7 +25,11 @@ Nota: este toggle normalmente se habilita desde la consola (no es algo que se �
 copy .env.example .env
 ```
 
-2) Rellenar `VITE_ADMIN_FIREBASE_*` con los valores del proyecto Firebase del Admin.
+2) Rellenar `VITE_FIREBASE_*` con los valores del proyecto Firebase unificado del ambiente (consola o outputs de `dp-proj-00-02-infra`).
+
+## CI / despliegue Hosting
+
+Workflow: `.github/workflows/deploy.yml`. Usa **GitHub Environments** (`dev` / `qa` / `prd`) con variables `GCP_PROJECT_ID`, `FIREBASE_HOSTING_SITE_ID_ADMIN`, `ADMIN_BACKEND_BASE_URL` (URL pública del backend en ese ambiente) y secretos de build (`VITE_*`, `FIREBASE_SERVICE_ACCOUNT`). El sitio Hosting admin es el **segundo** sitio creado por Terraform (`firebase_hosting_site_id_admin`).
 
 ## Backend (Cloud Run) — CORS / desarrollo local
 

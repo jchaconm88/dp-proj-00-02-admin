@@ -3,10 +3,10 @@ import { getAuth, connectAuthEmulator } from "firebase/auth";
 import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_ADMIN_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_ADMIN_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_ADMIN_FIREBASE_PROJECT_ID,
-  appId: import.meta.env.VITE_ADMIN_FIREBASE_APP_ID,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);

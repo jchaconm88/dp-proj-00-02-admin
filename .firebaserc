@@ -1,6 +1,5 @@
 {
   "projects": {
-    "default": "dp-proj-00-02-admin-q"
+    "default": "your-gcp-project-id-from-infra-output"
   }
 }
-
