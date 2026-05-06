@@ -76,4 +76,4 @@ jobs:
         env:
           GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
           HOSTING_SITE: ${{ vars.FIREBASE_HOSTING_SITE_ID_ADMIN }}
-        run: firebase deploy --project "${GCP_PROJECT_ID}" --only "hosting:${HOSTING_SITE}" --non-interactive
+        run: firebase deploy --project "${GCP_PROJECT_ID}" --only hosting --site "${HOSTING_SITE}" --non-interactive
