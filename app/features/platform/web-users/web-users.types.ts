@@ -6,6 +6,9 @@ export type WebAppUserRecord = {
   displayName: string;
   accountId?: string;
   status: "active" | "inactive" | "invited" | string;
+  webRoleIds: string[];
+  webRoleNames: string[];
+  platform: string[];
 };
 
 export type WebAppUserCreateInput = {

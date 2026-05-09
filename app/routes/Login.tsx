@@ -2,6 +2,7 @@ import { useState } from "react";
 import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { Link, useNavigate } from "react-router";
 import { auth } from "~/lib/firebase";
+import { adminFetch } from "~/lib/backend-client";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -10,13 +11,26 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const handleRedirect = async () => {
+    try {
+      const status = await adminFetch<{ completed: boolean }>("/admin/onboarding/status");
+      if (status?.completed) {
+        navigate("/");
+      } else {
+        navigate("/onboarding");
+      }
+    } catch {
+      navigate("/onboarding");
+    }
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
       await signInWithEmailAndPassword(auth, email.trim(), password);
-      navigate("/onboarding");
+      await handleRedirect();
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo iniciar sesión");
     } finally {
@@ -30,7 +44,7 @@ export default function LoginPage() {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-      navigate("/onboarding");
+      await handleRedirect();
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo iniciar sesión con Google");
     } finally {

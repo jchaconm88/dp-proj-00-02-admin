@@ -67,8 +67,6 @@ export default function WebUserDialog(props: {
       setEmail(u?.email ?? "");
       setDisplayName(u?.displayName ?? "");
       setStatus(u?.status ?? "active");
-      setPassword("");
-      setShowPassword(false);
     });
   }, [visible, isEdit, userIdToEdit]);
 

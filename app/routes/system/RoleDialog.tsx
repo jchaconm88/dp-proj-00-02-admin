@@ -17,6 +17,7 @@ export default function RoleDialog(props: {
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [platform, setPlatform] = useState<string[]>(["admin"]);
   const [readOnly, setReadOnly] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,12 +28,14 @@ export default function RoleDialog(props: {
     if (!isEdit) {
       setName("");
       setDescription("");
+      setPlatform(["admin"]);
       setReadOnly(false);
       return;
     }
     void getRoleById(roleId).then((r) => {
       setName(r?.name ?? "");
       setDescription(r?.description ?? "");
+      setPlatform(r?.platform ?? ["admin"]);
       setReadOnly(!!r?.readonly);
     });
   }, [visible, isEdit, roleId]);
@@ -49,9 +52,9 @@ export default function RoleDialog(props: {
     setError(null);
     try {
       if (isEdit) {
-        await updateRole(roleId, { name: name.trim(), description: description.trim() });
+        await updateRole(roleId, { name: name.trim(), description: description.trim(), platform });
       } else {
-        await createRole({ accountId, name: name.trim(), description: description.trim() });
+        await createRole({ accountId, name: name.trim(), description: description.trim(), platform });
       }
       onSuccess();
     } catch (e) {
@@ -59,6 +62,10 @@ export default function RoleDialog(props: {
     } finally {
       setSaving(false);
     }
+  };
+
+  const togglePlatform = (p: string) => {
+    setPlatform((prev) => (prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]));
   };
 
   return (
@@ -93,6 +100,26 @@ export default function RoleDialog(props: {
           placeholder="Descripción (opcional)"
           disabled={readOnly}
         />
+        <div className="flex gap-4">
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={platform.includes("admin")}
+              onChange={() => togglePlatform("admin")}
+              disabled={readOnly}
+            />
+            Admin
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={platform.includes("web")}
+              onChange={() => togglePlatform("web")}
+              disabled={readOnly}
+            />
+            Web
+          </label>
+        </div>
       </div>
     </DpContentSet>
   );

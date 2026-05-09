@@ -16,8 +16,9 @@ function normalize(id: string, data: Record<string, unknown>): UserRecord {
     email: String(data.email ?? "").trim(),
     displayName: String(data.displayName ?? data.userDisplayName ?? "").trim(),
     status,
-    roleIds: toStringArray(data.roleIds),
-    roleNames: toStringArray(data.roleNames),
+    adminRoleIds: toStringArray(data.adminRoleIds),
+    adminRoleNames: toStringArray(data.adminRoleNames),
+    platform: Array.isArray(data.platform) ? data.platform.map((x) => String(x)) : [],
   };
 }
 
@@ -43,8 +44,8 @@ export async function createUser(args: {
   email: string;
   displayName: string;
   status: "active" | "inactive";
-  roleIds: string[];
-  roleNames: string[];
+  adminRoleIds: string[];
+  adminRoleNames: string[];
 }): Promise<string> {
   const id = args.id.trim();
   await adminFetch("/admin/platform/users", {
@@ -56,18 +57,14 @@ export async function createUser(args: {
       email: args.email.trim(),
       displayName: args.displayName.trim(),
       status: args.status,
-      roleIds: args.roleIds,
-      roleNames: args.roleNames,
+      adminRoleIds: args.adminRoleIds,
+      adminRoleNames: args.adminRoleNames,
     } satisfies UserDoc & { id: string }),
   });
   return id;
 }
 
-export async function updateUser(id: string, data: Partial<Omit<UserRecord, "id" | "userId" | "accountId">> & {
-  roleIds?: string[];
-  roleNames?: string[];
-  status?: "active" | "inactive";
-}): Promise<void> {
+export async function updateUser(id: string, data: Partial<Omit<UserRecord, "id" | "userId" | "accountId">>): Promise<void> {
   await adminFetch(`/admin/platform/users/${id}`, {
     method: "PUT",
     body: JSON.stringify(data),
@@ -77,4 +74,3 @@ export async function updateUser(id: string, data: Partial<Omit<UserRecord, "id"
 export async function deleteUser(id: string): Promise<void> {
   await adminFetch(`/admin/platform/users/${id}`, { method: "DELETE" });
 }
-

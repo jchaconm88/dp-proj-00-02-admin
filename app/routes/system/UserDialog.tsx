@@ -42,7 +42,7 @@ export default function UserDialog(props: {
       setEmail(u?.email ?? "");
       setDisplayName(u?.displayName ?? "");
       setStatus(u?.status ?? "active");
-      setRoleIds(u?.roleIds ?? []);
+      setRoleIds(u?.adminRoleIds ?? []);
     });
   }, [visible, isEdit, userIdToEdit]);
 
@@ -72,8 +72,8 @@ export default function UserDialog(props: {
           email: email.trim(),
           displayName: displayName.trim(),
           status,
-          roleIds,
-          roleNames,
+          adminRoleIds: roleIds,
+          adminRoleNames: roleNames,
         });
       } else {
         const id = uid.trim();
@@ -84,8 +84,8 @@ export default function UserDialog(props: {
           email: email.trim(),
           displayName: displayName.trim(),
           status,
-          roleIds,
-          roleNames,
+          adminRoleIds: roleIds,
+          adminRoleNames: roleNames,
         });
       }
       onSuccess();

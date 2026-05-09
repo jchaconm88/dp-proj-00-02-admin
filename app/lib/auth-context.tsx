@@ -31,16 +31,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let cancelled = false;
     const unsub = onAuthStateChanged(auth, (u) => {
-      if (cancelled) return;
       setUser(u);
       setLoading(false);
     });
-    return () => {
-      cancelled = true;
-      unsub();
-    };
+    return () => unsub();
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {

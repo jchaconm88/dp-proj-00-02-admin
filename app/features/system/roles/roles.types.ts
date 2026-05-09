@@ -13,5 +13,6 @@ export type RoleRecord = {
   permission?: string[];
   source?: AdminRoleSource;
   readonly?: boolean;
+  platform: string[]; // ["admin"] o ["web"] o ["admin", "web"]
 };
 

@@ -7,7 +7,8 @@ export type CompanyUserRecord = {
   usersDocId?: string;
   userEmail?: string;
   userDisplayName?: string;
-  roleIds: string[];
-  roleNames?: string[];
+  webRoleIds: string[];
+  webRoleNames?: string[];
   status: "active" | "inactive";
+  platform?: string[];
 };

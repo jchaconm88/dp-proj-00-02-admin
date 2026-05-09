@@ -13,4 +13,5 @@ export type WebCompanyRoleRecord = {
   accountId?: string;
   source?: WebRoleSource;
   readonly?: boolean;
+  platform: string[]; // ["web"] o ["admin"] o ["admin", "web"]
 };

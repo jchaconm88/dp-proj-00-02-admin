@@ -103,7 +103,7 @@ export default function CompanyUserDialog({
         String(companyUser.usersDocId ?? "").trim() ||
           (companyUser.id.includes("_") ? companyUser.id.split("_").slice(1).join("_").trim() : "")
       );
-      setRoleIds(companyUser.roleIds ?? []);
+      setRoleIds(companyUser.webRoleIds ?? []);
       setStatus(companyUser.status);
       return;
     }
@@ -180,8 +180,8 @@ export default function CompanyUserDialog({
     try {
       if (isEdit && companyUser) {
         await updateCompanyUser(companyUser.id, {
-          roleIds: normalizedRoleIds,
-          roleNames,
+          webRoleIds: normalizedRoleIds,
+          webRoleNames: roleNames,
           status,
         });
       } else {
@@ -203,8 +203,8 @@ export default function CompanyUserDialog({
           usersDocId: selectedUser.id.trim() || undefined,
           userEmail: selectedUser.email.trim().toLowerCase() || undefined,
           userDisplayName: selectedUser.displayName?.trim() || undefined,
-          roleIds: normalizedRoleIds,
-          roleNames,
+          webRoleIds: normalizedRoleIds,
+          webRoleNames: roleNames,
           status,
         });
       }

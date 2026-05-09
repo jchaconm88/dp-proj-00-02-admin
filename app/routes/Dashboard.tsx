@@ -129,7 +129,7 @@ export default function DashboardLayout() {
       if (!user?.uid) return;
       let mem = null as Awaited<ReturnType<typeof getMyAdminUser>>;
       try {
-        mem = await getMyAdminUser(user.uid);
+        mem = await getMyAdminUser();
       } catch {
         mem = null;
       }
@@ -140,8 +140,8 @@ export default function DashboardLayout() {
         return;
       }
       setAdminAccountId(mem.accountId || null);
-      setUserRoleIds(mem.roleIds ?? []);
-      setUserRoleNames(mem.roleNames ?? []);
+      setUserRoleIds(mem.adminRoleIds ?? []);
+      setUserRoleNames(mem.adminRoleNames ?? []);
     }
     void run();
     return () => {

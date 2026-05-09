@@ -23,6 +23,7 @@ function normalize(id: string, data: Record<string, unknown>): WebCompanyRoleRec
     accountId: String(data.accountId ?? "").trim() || undefined,
     source: data.source === "custom" ? "custom" : "default",
     readonly: data.readonly === true,
+    platform: Array.isArray(data.platform) ? data.platform.map((x) => String(x)) : [],
   };
 }
 
@@ -49,6 +50,7 @@ export async function createWebCompanyRole(args: {
   description: string;
   permissions?: RolePermissions;
   permission?: string[];
+  platform?: string[];
 }): Promise<string> {
   const res = await adminFetch<{ ok: boolean; id: string }>(BASE, {
     method: "POST",
@@ -58,6 +60,7 @@ export async function createWebCompanyRole(args: {
       description: args.description.trim(),
       permissions: args.permissions ?? {},
       permission: args.permission ?? [],
+      platform: args.platform ?? [],
     }),
   });
   return res.id;
@@ -65,7 +68,7 @@ export async function createWebCompanyRole(args: {
 
 export async function updateWebCompanyRole(
   id: string,
-  data: Partial<Pick<WebCompanyRoleRecord, "name" | "description" | "permissions" | "permission">>,
+  data: Partial<Pick<WebCompanyRoleRecord, "name" | "description" | "permissions" | "permission" | "platform">>,
   companyId?: string | null
 ): Promise<void> {
   const cid = String(companyId ?? "").trim();

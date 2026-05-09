@@ -2,6 +2,7 @@ import { useState } from "react";
 import { GoogleAuthProvider, createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { Link, useNavigate } from "react-router";
 import { auth } from "~/lib/firebase";
+import { adminFetch } from "~/lib/backend-client";
 
 export default function RegistroPage() {
   const [email, setEmail] = useState("");
@@ -10,13 +11,26 @@ export default function RegistroPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const handleRedirect = async () => {
+    try {
+      const status = await adminFetch<{ completed: boolean }>("/admin/onboarding/status");
+      if (status?.completed) {
+        navigate("/");
+      } else {
+        navigate("/onboarding");
+      }
+    } catch {
+      navigate("/onboarding");
+    }
+  };
+
   const registerEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
       await createUserWithEmailAndPassword(auth, email.trim(), password);
-      navigate("/onboarding");
+      await handleRedirect();
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo crear el usuario");
     } finally {
@@ -30,7 +44,7 @@ export default function RegistroPage() {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-      navigate("/onboarding");
+      await handleRedirect();
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo crear el usuario con Google");
     } finally {

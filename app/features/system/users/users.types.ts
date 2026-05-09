@@ -5,7 +5,8 @@ export type UserRecord = {
   email: string;
   displayName: string;
   status: "active" | "inactive";
-  roleIds: string[];
-  roleNames: string[];
+  adminRoleIds: string[];
+  adminRoleNames: string[];
+  platform: string[];
 };
 

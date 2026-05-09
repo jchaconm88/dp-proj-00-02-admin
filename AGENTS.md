@@ -22,6 +22,7 @@ En el frontend Admin:
 
 ### ❌ Incorrecto
 
+- Inventar compatibilidad con datos huérfanos o esquemas antiguos: el proyecto se trata como **greenfield**; el backend y este frontend deben usar solo el modelo y contratos actuales (sin “legacy”).
 - Importar `firebase/firestore` en páginas/servicios del Admin para cargar o mutar datos de:
   - `users`, `roles`, `accounts`, `companies`, `subscriptions`, `saas-plans`, etc.
 - Basar redirecciones (p. ej. `/onboarding`) en lecturas directas del cliente a Firestore que pueden fallar por reglas/permisos.

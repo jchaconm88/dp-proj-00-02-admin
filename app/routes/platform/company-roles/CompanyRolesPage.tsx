@@ -62,7 +62,7 @@ export default function CompanyRolesPage() {
   const reloadCompanies = async () => {
     if (!user?.uid) return;
     try {
-      const u = await getMyAdminUser(user.uid);
+      const u = await getMyAdminUser();
       const acc = u?.accountId?.trim() || null;
       setAccountId(acc);
       if (!acc) {

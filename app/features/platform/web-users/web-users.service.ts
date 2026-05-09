@@ -24,11 +24,15 @@ function normalize(id: string, data: Record<string, unknown>): WebAppUserRecord 
     displayName: String(data.displayName ?? "").trim(),
     accountId: String(data.accountId ?? "").trim() || undefined,
     status: st === "inactive" ? "inactive" : st === "invited" ? "invited" : "active",
+    webRoleIds: Array.isArray(data.webRoleIds) ? data.webRoleIds.map((x) => String(x)) : [],
+    webRoleNames: Array.isArray(data.webRoleNames) ? data.webRoleNames.map((x) => String(x)) : [],
+    platform: Array.isArray(data.platform) ? data.platform.map((x) => String(x)) : [],
   };
 }
 
 export async function listWebAppUsers(): Promise<WebAppUserRecord[]> {
   const rows = await adminFetch<Record<string, unknown>[]>(BASE);
+  // El backend consulta Firestore con `platform` array-contains `web`.
   return rows.map((d) => normalize(String(d.id), d));
 }
 

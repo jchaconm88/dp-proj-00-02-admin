@@ -113,12 +113,11 @@ export default function OnboardingPage() {
       }
       try {
         obLog("auth user:", { uid: user.uid, email: user.email });
-        const me = await getMyAdminUser(user.uid);
+        const me = await getMyAdminUser();
         if (cancelled) return;
         obLog("getMyAdminUser:", me);
         if (me?.status === "active" && me.accountId) {
           setAccountId(me.accountId);
-          // si ya existe account, saltar al paso empresa
         }
       } catch (e) {
         obLog("getMyAdminUser failed:", e);
@@ -150,7 +149,6 @@ export default function OnboardingPage() {
       } catch (e) {
         obLog("computeResume failed:", e);
         if (!accountId) {
-          obLog("computeResume fallback: no accountId -> resumeIndex=0");
           setResumeIndex(0);
         }
       }
@@ -262,7 +260,7 @@ export default function OnboardingPage() {
     setSaving(true);
     setError(null);
     try {
-      await adminFetch("/admin/onboarding/bootstrap-web-tenant", {
+      const out = await adminFetch<{ generatedPassword?: string }>("/admin/onboarding/bootstrap-web-tenant", {
         method: "POST",
         body: JSON.stringify({
           companyId: accountId,
@@ -274,6 +272,10 @@ export default function OnboardingPage() {
           webUserDisplayName: firstWebUserDisplayName.trim(),
         }),
       });
+      if (out.generatedPassword) {
+        setError(null);
+        alert(`Usuario creado. Contraseña generada: ${out.generatedPassword}\nGuárdala en un lugar seguro.`);
+      }
       stepperRef.current?.nextCallback();
     } catch (e) {
       const msg = e instanceof Error ? e.message : "No se pudo crear la empresa ni el usuario Web inicial";

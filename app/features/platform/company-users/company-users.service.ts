@@ -15,9 +15,10 @@ function normalizeCompanyUser(id: string, raw: Record<string, unknown>): Company
     usersDocId: raw.usersDocId != null ? String(raw.usersDocId) : undefined,
     userEmail: raw.userEmail != null ? String(raw.userEmail) : undefined,
     userDisplayName: raw.userDisplayName != null ? String(raw.userDisplayName) : undefined,
-    roleIds: Array.isArray(raw.roleIds) ? raw.roleIds.map((x) => String(x)) : [],
-    roleNames: Array.isArray(raw.roleNames) ? raw.roleNames.map((x) => String(x)) : [],
+    webRoleIds: Array.isArray(raw.webRoleIds) ? raw.webRoleIds.map((x) => String(x)) : [],
+    webRoleNames: Array.isArray(raw.webRoleNames) ? raw.webRoleNames.map((x) => String(x)) : [],
     status,
+    platform: Array.isArray(raw.platform) ? raw.platform.map((x) => String(x)) : [],
   };
 }
 
@@ -41,8 +42,8 @@ export async function createCompanyUser(data: {
   usersDocId?: string;
   userEmail?: string;
   userDisplayName?: string;
-  roleIds: string[];
-  roleNames: string[];
+  webRoleIds: string[];
+  webRoleNames: string[];
   status: "active" | "inactive";
 }): Promise<string> {
   const res = await adminFetch<{ id?: string }>(BASE, {
@@ -57,7 +58,7 @@ export async function updateCompanyUser(
   data: Partial<
     Pick<
       CompanyUserRecord,
-      "user" | "usersDocId" | "userEmail" | "userDisplayName" | "roleIds" | "roleNames" | "status"
+      "user" | "usersDocId" | "userEmail" | "userDisplayName" | "webRoleIds" | "webRoleNames" | "status"
     >
   >
 ): Promise<void> {

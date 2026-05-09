@@ -26,7 +26,7 @@ export default function DashboardHome() {
       setLoading(true);
       setError(null);
       try {
-        const mem = await getMyAdminUser(user.uid);
+        const mem = await getMyAdminUser();
         if (cancelled) return;
         setAdminUser(mem);
         if (!mem?.accountId) {

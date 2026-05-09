@@ -7,6 +7,7 @@ type RoleDoc = {
   description?: string;
   permissions?: unknown;
   permission?: string[];
+  platform?: unknown;
 };
 
 function normalizePermissions(raw: unknown): RolePermissions {
@@ -28,6 +29,7 @@ function toRoleRecord(id: string, data: RoleDoc & { source?: unknown; readonly?:
     permission: Array.isArray(data.permission) ? data.permission : [],
     source: data.source === "custom" ? "custom" : "default",
     readonly: data.readonly === true,
+    platform: Array.isArray(data.platform) ? data.platform.map((x) => String(x)) : [],
   };
 }
 
@@ -46,17 +48,18 @@ export async function getRoleById(id: string): Promise<RoleRecord | null> {
   }
 }
 
-export async function createRole(args: { accountId: string; name: string; description: string }): Promise<string> {
-  const out = await adminFetch<{ ok: boolean; id: string }>("/admin/platform/roles", {
+export async function createRole(args: { accountId: string; name: string; description: string; platform?: string[] }): Promise<string> {
+  const res = await adminFetch<{ ok: boolean; id: string }>("/admin/platform/roles", {
     method: "POST",
     body: JSON.stringify({
-      accountId: args.accountId,
-      name: args.name,
-      description: args.description,
+      accountId: args.accountId.trim(),
+      name: args.name.trim(),
+      description: args.description.trim(),
       permissions: {},
-    } satisfies RoleDoc),
+      platform: args.platform ?? [],
+    }),
   });
-  return out.id;
+  return res.id;
 }
 
 export async function updateRole(id: string, data: Partial<Omit<RoleRecord, "id">>): Promise<void> {

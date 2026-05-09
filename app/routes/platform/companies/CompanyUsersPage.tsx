@@ -6,7 +6,6 @@ import {
   type CompanyUserRecord,
 } from "~/features/platform/company-users/company-users.service";
 import { getCompanyById } from "~/features/platform/companies/companies.service";
-import { listAdminRoles } from "~/lib/admin-roles.service";
 import type { Route } from "./+types/CompanyUsersPage";
 import { DpContentHeader, DpContentInfo } from "~/components/ui";
 import { DpTable, type DpTableRef } from "~/components/ui";
@@ -56,19 +55,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
     getCompanyUsersByCompanyId(companyId),
   ]);
 
-  let normalized = members;
-  const needsRoleNames = members.some(
-    (m) => (m.roleIds?.length ?? 0) > 0 && !(m.roleNames && m.roleNames.length > 0)
-  );
-  if (needsRoleNames) {
-    const roles = await listAdminRoles("");
-    const roleById = new Map(roles.map((r) => [r.id, r.name || r.id]));
-    normalized = members.map((m) => {
-      if ((m.roleIds?.length ?? 0) === 0 || (m.roleNames?.length ?? 0) > 0) return m;
-      const roleNames = m.roleIds.map((id) => String(roleById.get(id) ?? id)).filter(Boolean);
-      return { ...m, roleNames };
-    });
-  }
+  const normalized = members;
 
   const rows: UserRow[] = normalized.map((m) => {
     const name =
@@ -76,11 +63,10 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
       m.userDisplayName?.trim() ||
       "";
     const email = m.userEmail?.trim() || "";
-    const fallbackId = m.usersDocId?.trim() || m.userId || "—";
     const emailLabel = name && email
       ? `${name} (${email})`
-      : name || email || fallbackId;
-    const names = m.roleNames?.filter((x) => String(x).trim()) ?? m.roleIds;
+      : name || email || "—";
+    const names = (m.webRoleNames?.filter((x) => String(x).trim()) ?? m.webRoleIds ?? []) as string[];
     return {
       ...m,
       emailLabel,
