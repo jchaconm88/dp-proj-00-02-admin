@@ -29,7 +29,7 @@ copy .env.example .env
 
 ## CI / despliegue Hosting
 
-Workflow: `.github/workflows/deploy.yml`. Usa **GitHub Environments** (`dev` / `qa` / `prd`) con variables `GCP_PROJECT_ID`, `FIREBASE_HOSTING_SITE_ID_ADMIN`, `ADMIN_BACKEND_BASE_URL` (URL pública del backend en ese ambiente) y secretos de build (`VITE_*`, `FIREBASE_SERVICE_ACCOUNT`). El deploy usa `firebase deploy --site "$FIREBASE_HOSTING_SITE_ID_ADMIN"` para apuntar al **segundo** sitio creado por Terraform (`firebase_hosting_site_id_admin`).
+Workflow: `.github/workflows/deploy.yml`. Usa **GitHub Environments** (`dev` / `qa` / `prd`) con variables `GCP_PROJECT_ID`, `FIREBASE_HOSTING_SITE_ID_ADMIN`, `BACKEND_BASE_URL` (URL pública del backend en ese ambiente) y secretos de build (`VITE_*`, `FIREBASE_SERVICE_ACCOUNT`). El deploy usa `firebase deploy --site "$FIREBASE_HOSTING_SITE_ID_ADMIN"` para apuntar al **segundo** sitio creado por Terraform (`firebase_hosting_site_id_admin`).
 
 ## Backend (Cloud Run) — CORS / desarrollo local
 

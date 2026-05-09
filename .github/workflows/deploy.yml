@@ -36,8 +36,8 @@ jobs:
             echo "::error::Define FIREBASE_HOSTING_SITE_ID_ADMIN (output firebase_hosting_site_id_admin de infra)."
             exit 1
           fi
-          if [[ -z "${{ vars.ADMIN_BACKEND_BASE_URL }}" ]]; then
-            echo "::error::Define ADMIN_BACKEND_BASE_URL (URL del backend Cloud Run del ambiente)."
+          if [[ -z "${{ vars.BACKEND_BASE_URL }}" ]]; then
+            echo "::error::Define BACKEND_BASE_URL (URL del backend Cloud Run del ambiente)."
             exit 1
           fi
 
@@ -62,7 +62,7 @@ jobs:
           VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
           VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
-          VITE_ADMIN_BACKEND_BASE_URL: ${{ vars.ADMIN_BACKEND_BASE_URL }}
+          VITE_ADMIN_BACKEND_BASE_URL: ${{ vars.BACKEND_BASE_URL }}
 
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
