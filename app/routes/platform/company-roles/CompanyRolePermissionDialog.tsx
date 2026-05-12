@@ -4,11 +4,11 @@ import { Checkbox } from "primereact/checkbox";
 import { MultiSelect } from "primereact/multiselect";
 import { DpContentSet, DpInput } from "~/components/ui";
 import { getModules, getModule } from "~/features/system/web-modules";
-import { updateWebCompanyRole, getWebCompanyRoleById } from "~/features/platform/web-roles";
+import { updateCompanyRole, getCompanyRoleById } from "~/features/platform/web-roles";
 import type { RolePermissions } from "~/features/system/roles/roles.types";
 import type { ModulePermission, ModuleRecord } from "~/features/system/web-modules";
 
-export default function WebCompanyRolePermissionDialog(props: {
+export default function CompanyRolePermissionDialog(props: {
   visible: boolean;
   roleId: string | null;
   companyId?: string | null;
@@ -39,7 +39,7 @@ export default function WebCompanyRolePermissionDialog(props: {
       setSelectedCodes([]);
       return;
     }
-    void getWebCompanyRoleById(roleId, companyId ?? null).then((r) => {
+    void getCompanyRoleById(roleId, companyId ?? null).then((r) => {
       const perms = (r?.permissions ?? {}) as RolePermissions;
       setCurrentPermissions(perms);
       setSelectedCodes(editModuleId ? (perms[editModuleId] ?? []) : []);
@@ -70,7 +70,7 @@ export default function WebCompanyRolePermissionDialog(props: {
     setError(null);
     try {
       const next: RolePermissions = { ...currentPermissions, [moduleId]: [...selectedCodes] };
-      await updateWebCompanyRole(roleId, { permissions: next }, companyId ?? null);
+      await updateCompanyRole(roleId, { permissions: next }, companyId ?? null);
       await onSuccess();
       onHide();
     } catch (e) {

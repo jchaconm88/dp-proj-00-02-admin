@@ -3,7 +3,7 @@ import type { RolePermissions } from "~/features/system/roles/roles.types";
 export type WebRoleSource = "default" | "custom";
 
 /** Rol merge (catálogo + doc en colección `roles` del proyecto Web). */
-export type WebCompanyRoleRecord = {
+export type CompanyRoleRecord = {
   id: string;
   companyId: string;
   name: string;

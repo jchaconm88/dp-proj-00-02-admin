@@ -12,59 +12,59 @@ import { DpConfirmDialog } from "~/components/ui";
 import { DpInput } from "~/components/ui";
 import { DpContentSet } from "~/components/ui";
 import {
-  getSubscriptions,
-  createSubscription,
-  updateSubscription,
-  deleteSubscription,
-} from "~/features/platform/subscriptions/subscriptions.service";
-import type { SubscriptionRecord } from "~/features/platform/subscriptions/subscriptions.types";
+  getPlans,
+  createPlan,
+  updatePlan,
+  deletePlan,
+} from "~/features/platform/saas-plans/saas-plans.service";
+import type { SaasPlanRecord } from "~/features/platform/saas-plans/saas-plans.types";
 import type { DpTableDefColumn, StatusSeverity } from "~/components/ui";
 
 // ─── Table definition ────────────────────────────────────────────────────────
 
-const STATUS_OPTIONS: Record<string, { label: string; severity: StatusSeverity }> = {
-  active: { label: "Activo", severity: "success" },
-  inactive: { label: "Inactivo", severity: "secondary" },
-  suspended: { label: "Suspendido", severity: "warning" },
-  cancelled: { label: "Cancelado", severity: "danger" },
+const ACTIVE_OPTIONS: Record<string, { label: string; severity: StatusSeverity }> = {
+  true: { label: "Activo", severity: "success" },
+  false: { label: "Inactivo", severity: "secondary" },
 };
 
-const SUBSCRIPTIONS_TABLE_DEF: DpTableDefColumn[] = [
+const PLANS_TABLE_DEF: DpTableDefColumn[] = [
   { header: "ID", column: "id", order: 1, display: true, filter: true, sort: true },
   { header: "Plan ID", column: "planId", order: 2, display: true, filter: true, sort: true },
+  { header: "Nombre", column: "name", order: 3, display: true, filter: true, sort: true },
   {
-    header: "Estado",
-    column: "status",
-    order: 3,
+    header: "Activo",
+    column: "active",
+    order: 4,
     display: true,
     filter: true,
     type: "status",
-    typeOptions: STATUS_OPTIONS,
+    typeOptions: ACTIVE_OPTIONS,
   },
 ];
 
 // ─── Loader ───────────────────────────────────────────────────────────────────
 
 export async function clientLoader() {
-  const items = await getSubscriptions();
+  const items = await getPlans();
   return { items };
 }
 
-// ─── SubscriptionDialog ───────────────────────────────────────────────────────
+// ─── PlanDialog ───────────────────────────────────────────────────────────────
 
-interface SubscriptionDialogProps {
+interface PlanDialogProps {
   visible: boolean;
-  item: SubscriptionRecord | null;
+  item: SaasPlanRecord | null;
   onHide: () => void;
   onSaved: () => void;
 }
 
-function SubscriptionDialog({ visible, item, onHide, onSaved }: SubscriptionDialogProps) {
+function PlanDialog({ visible, item, onHide, onSaved }: PlanDialogProps) {
   const isEdit = item !== null;
 
   const [id, setId] = useState("");
   const [planId, setPlanId] = useState("");
-  const [status, setStatus] = useState<SubscriptionRecord["status"]>("active");
+  const [name, setName] = useState("");
+  const [active, setActive] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -75,17 +75,17 @@ function SubscriptionDialog({ visible, item, onHide, onSaved }: SubscriptionDial
     if (item) {
       setId(item.id);
       setPlanId(item.planId);
-      setStatus(item.status);
+      setName(item.name);
+      setActive(item.active);
     } else {
       setId("");
       setPlanId("");
-      setStatus("active");
+      setName("");
+      setActive(true);
     }
   }, [visible, item]);
 
-  const valid =
-    id.trim().length > 0 &&
-    planId.trim().length > 0;
+  const valid = id.trim().length > 0 && planId.trim().length > 0 && name.trim().length > 0;
 
   const handleSave = async () => {
     if (!valid) return;
@@ -93,17 +93,17 @@ function SubscriptionDialog({ visible, item, onHide, onSaved }: SubscriptionDial
     setError(null);
     try {
       if (isEdit) {
-        await updateSubscription(item.id, {
-          accountId: item.accountId,
+        await updatePlan(item.id, {
           planId: planId.trim(),
-          status,
+          name: name.trim(),
+          active,
         });
       } else {
-        await createSubscription({
+        await createPlan({
           id: id.trim(),
-          accountId: "current",
           planId: planId.trim(),
-          status,
+          name: name.trim(),
+          active,
         });
       }
       onSaved();
@@ -114,16 +114,14 @@ function SubscriptionDialog({ visible, item, onHide, onSaved }: SubscriptionDial
     }
   };
 
-  const STATUS_SELECT_OPTIONS = [
-    { label: "Activo", value: "active" },
-    { label: "Inactivo", value: "inactive" },
-    { label: "Suspendido", value: "suspended" },
-    { label: "Cancelado", value: "cancelled" },
+  const ACTIVE_SELECT_OPTIONS = [
+    { label: "Activo", value: "true" },
+    { label: "Inactivo", value: "false" },
   ];
 
   return (
     <DpContentSet
-      title={isEdit ? "Editar suscripción" : "Nueva suscripción"}
+      title={isEdit ? "Editar plan" : "Nuevo plan"}
       recordId={isEdit ? item.id : null}
       visible={visible}
       onHide={onHide}
@@ -138,7 +136,7 @@ function SubscriptionDialog({ visible, item, onHide, onSaved }: SubscriptionDial
         <DpInput
           type="input"
           label="ID"
-          name="subscriptionId"
+          name="planDocId"
           value={id}
           onChange={setId}
           disabled={isEdit}
@@ -147,40 +145,48 @@ function SubscriptionDialog({ visible, item, onHide, onSaved }: SubscriptionDial
         <DpInput
           type="input"
           label="Plan ID"
-          name="subscriptionPlanId"
+          name="planId"
           value={planId}
           onChange={setPlanId}
-          placeholder="ID del plan"
+          placeholder="Identificador del plan (ej. basic, pro)"
+        />
+        <DpInput
+          type="input"
+          label="Nombre"
+          name="planName"
+          value={name}
+          onChange={setName}
+          placeholder="Nombre del plan"
         />
         <DpInput
           type="select"
-          label="Estado"
-          name="subscriptionStatus"
-          value={status}
-          onChange={(v) => setStatus(v as SubscriptionRecord["status"])}
-          options={STATUS_SELECT_OPTIONS}
+          label="Activo"
+          name="planActive"
+          value={String(active)}
+          onChange={(v) => setActive(v === "true")}
+          options={ACTIVE_SELECT_OPTIONS}
         />
       </div>
     </DpContentSet>
   );
 }
 
-// ─── SubscriptionsPage ────────────────────────────────────────────────────────
+// ─── PlansPage ────────────────────────────────────────────────────────────────
 
-export default function SubscriptionsPage() {
+export default function PlansPage() {
   const { items } = useLoaderData<typeof clientLoader>();
   const navigate = useNavigate();
   const navigation = useNavigation();
   const revalidator = useRevalidator();
-  const tableRef = useRef<DpTableRef<SubscriptionRecord>>(null);
+  const tableRef = useRef<DpTableRef<SaasPlanRecord>>(null);
 
   const [selectedCount, setSelectedCount] = useState(0);
   const [pendingDeleteIds, setPendingDeleteIds] = useState<string[] | null>(null);
   const [deleteSaving, setDeleteSaving] = useState(false);
   const [filterValue, setFilterValue] = useState("");
 
-  const matchAdd = useMatch("/subscriptions/add");
-  const matchEdit = useMatch("/subscriptions/edit/:id");
+  const matchAdd = useMatch("/plans/add");
+  const matchEdit = useMatch("/plans/edit/:id");
 
   const showDialog = Boolean(matchAdd || matchEdit);
   const editId = matchEdit?.params.id ?? null;
@@ -193,13 +199,12 @@ export default function SubscriptionsPage() {
     tableRef.current?.filter(value);
   };
 
-  const openAdd = () => navigate("/subscriptions/add");
-  const openEdit = (row: SubscriptionRecord) =>
-    navigate(`/subscriptions/edit/${encodeURIComponent(row.id)}`);
-  const handleHide = () => navigate("/subscriptions");
+  const openAdd = () => navigate("/plans/add");
+  const openEdit = (row: SaasPlanRecord) => navigate(`/plans/edit/${encodeURIComponent(row.id)}`);
+  const handleHide = () => navigate("/plans");
 
   const handleSaved = () => {
-    navigate("/subscriptions");
+    navigate("/plans");
     revalidator.revalidate();
   };
 
@@ -214,7 +219,7 @@ export default function SubscriptionsPage() {
     if (!ids?.length) return;
     setDeleteSaving(true);
     try {
-      await Promise.all(ids.map((id) => deleteSubscription(id)));
+      await Promise.all(ids.map((id) => deletePlan(id)));
       tableRef.current?.clearSelectedRows();
       setPendingDeleteIds(null);
       revalidator.revalidate();
@@ -232,8 +237,8 @@ export default function SubscriptionsPage() {
   return (
     <>
       <DpContent
-        title="SUBSCRIPTIONS"
-        breadcrumbItems={["PLATAFORMA", "SUBSCRIPTIONS"]}
+        title="PLANS"
+        breadcrumbItems={["ADMIN", "PLANES"]}
         onCreate={openAdd}
       >
         <DpContentHeader
@@ -244,23 +249,23 @@ export default function SubscriptionsPage() {
           onDelete={openDeleteConfirm}
           deleteDisabled={selectedCount === 0 || deleteSaving}
           loading={isLoading}
-          filterPlaceholder="Filtrar por ID, account, plan..."
+          filterPlaceholder="Filtrar por ID, nombre..."
         />
 
-        <DpTable<SubscriptionRecord>
+        <DpTable<SaasPlanRecord>
           ref={tableRef}
           data={items}
           loading={isLoading}
-          tableDef={SUBSCRIPTIONS_TABLE_DEF}
+          tableDef={PLANS_TABLE_DEF}
           onEdit={openEdit}
           onSelectionChange={(rows) => setSelectedCount(rows.length)}
           showFilterInHeader={false}
-          emptyMessage='No hay suscripciones en la colección "subscriptions".'
+          emptyMessage='No hay planes en la colección "saas-plans".'
           emptyFilterMessage="No hay resultados para el filtro."
         />
       </DpContent>
 
-      <SubscriptionDialog
+      <PlanDialog
         visible={showDialog}
         item={dialogItem}
         onHide={handleHide}
@@ -270,10 +275,10 @@ export default function SubscriptionsPage() {
       <DpConfirmDialog
         visible={pendingDeleteIds !== null}
         onHide={closeDeleteConfirm}
-        title="Eliminar suscripciones"
+        title="Eliminar planes"
         message={
           pendingDeleteIds?.length
-            ? `¿Eliminar ${pendingDeleteIds.length} suscripción(es)? Esta acción no se puede deshacer.`
+            ? `¿Eliminar ${pendingDeleteIds.length} plan(es)? Esta acción no se puede deshacer.`
             : ""
         }
         confirmLabel="Eliminar"

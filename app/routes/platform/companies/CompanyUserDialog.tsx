@@ -8,7 +8,7 @@ import {
   updateCompanyUser,
   type CompanyUserRecord,
 } from "~/features/platform/company-users/company-users.service";
-import { listWebCompanyRoles, type WebCompanyRoleRecord } from "~/features/platform/web-roles";
+import { listCompanyRoles, type CompanyRoleRecord } from "~/features/platform/web-roles";
 import { listWebAppUsers, type WebAppUserRecord } from "~/features/platform/web-users";
 
 const STATUS_OPTIONS: { label: string; value: "active" | "inactive" }[] = [
@@ -54,7 +54,7 @@ export default function CompanyUserDialog({
   const [selectedUserDocId, setSelectedUserDocId] = useState("");
   const [users, setUsers] = useState<WebAppUserRecord[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
-  const [roles, setRoles] = useState<WebCompanyRoleRecord[]>([]);
+  const [roles, setRoles] = useState<CompanyRoleRecord[]>([]);
   const [rolesLoading, setRolesLoading] = useState(false);
   const [roleIds, setRoleIds] = useState<string[]>([]);
   const [status, setStatus] = useState<"active" | "inactive">("active");
@@ -119,7 +119,7 @@ export default function CompanyUserDialog({
     }
     let cancelled = false;
     setRolesLoading(true);
-    listWebCompanyRoles(companyId.trim())
+    listCompanyRoles(companyId.trim())
       .then((rows) => {
         if (!cancelled) setRoles(rows);
       })

@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigation } from "react-router";
 import { DpContentSet, DpInput } from "~/components/ui";
 import {
-  createWebCompanyRole,
-  getWebCompanyRoleById,
-  updateWebCompanyRole,
+  createCompanyRole,
+  getCompanyRoleById,
+  updateCompanyRole,
 } from "~/features/platform/web-roles";
 
-export default function WebCompanyRoleDialog(props: {
+export default function CompanyRoleDialog(props: {
   visible: boolean;
   companyId: string | null;
   roleId: string | null;
@@ -34,7 +34,7 @@ export default function WebCompanyRoleDialog(props: {
       setReadOnly(false);
       return;
     }
-    void getWebCompanyRoleById(roleId, companyId).then((r) => {
+    void getCompanyRoleById(roleId, companyId).then((r) => {
       setName(r?.name ?? "");
       setDescription(r?.description ?? "");
       setReadOnly(!!r?.readonly);
@@ -49,13 +49,13 @@ export default function WebCompanyRoleDialog(props: {
     setError(null);
     try {
       if (isEdit) {
-        await updateWebCompanyRole(
+        await updateCompanyRole(
           roleId,
           { name: name.trim(), description: description.trim() },
           companyId.trim()
         );
       } else {
-        await createWebCompanyRole({
+        await createCompanyRole({
           companyId: companyId.trim(),
           name: name.trim(),
           description: description.trim(),

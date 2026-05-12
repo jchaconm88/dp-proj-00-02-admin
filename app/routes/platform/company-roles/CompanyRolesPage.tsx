@@ -1,22 +1,35 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLoaderData, useNavigate, useNavigation, useRevalidator } from "react-router";
-import { DpConfirmDialog, DpContent, DpContentHeader, DpTable, type DpTableRef } from "~/components/ui";
-import type { DpTableDefColumn } from "~/components/ui";
+import {
+  DpConfirmDialog,
+  DpContent,
+  DpContentFilter,
+  DpContentHeader,
+  DpTable,
+  type DpContentFilterRef,
+  type DpFilterDef,
+  type DpTableDefColumn,
+  type DpTableRef,
+} from "~/components/ui";
 import { useAuth } from "~/lib/auth-context";
 import { getMyAdminUser } from "~/lib/admin-user.service";
 import { getCompanies } from "~/features/platform/companies/companies.service";
 import type { CompanyRecord } from "~/features/platform/companies/companies.types";
 import {
-  deleteWebCompanyRole,
-  listWebCompanyRoles,
-  type WebCompanyRoleRecord,
+  deleteCompanyRole,
+  listCompanyRoles,
+  type CompanyRoleRecord,
 } from "~/features/platform/web-roles";
-import WebCompanyRoleDialog from "./WebCompanyRoleDialog";
+import CompanyRoleDialog from "./CompanyRoleDialog";
 
 const TABLE_DEF: DpTableDefColumn[] = [
   { header: "Nombre", column: "name", order: 1, display: true, filter: true, sort: true },
   { header: "Descripción", column: "description", order: 2, display: true, filter: true, sort: true },
 ];
+
+type CompanyRolesFiltersForm = {
+  companyId: string;
+};
 
 export async function clientLoader() {
   return {};
@@ -28,12 +41,14 @@ export default function CompanyRolesPage() {
   const navigate = useNavigate();
   const navigation = useNavigation();
   const revalidator = useRevalidator();
-  const tableRef = useRef<DpTableRef<WebCompanyRoleRecord>>(null);
+  const contentFilterRef = useRef<DpContentFilterRef>(null);
+  const tableRef = useRef<DpTableRef<CompanyRoleRecord>>(null);
 
   const [accountId, setAccountId] = useState<string | null>(null);
   const [companies, setCompanies] = useState<CompanyRecord[]>([]);
-  const [companyId, setCompanyId] = useState("");
-  const [items, setItems] = useState<WebCompanyRoleRecord[]>([]);
+  const [filters, setFilters] = useState<CompanyRolesFiltersForm>({ companyId: "" });
+  const defaultCompanyRoleFilters = useRef<CompanyRolesFiltersForm>({ companyId: "" }).current;
+  const [items, setItems] = useState<CompanyRoleRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,6 +73,18 @@ export default function CompanyRolesPage() {
       })),
     [companies]
   );
+  const filterDefs = useMemo<DpFilterDef[]>(
+    () => [
+      {
+        name: "companyId",
+        label: "Empresa",
+        type: "select",
+        placeholder: "— Selecciona empresa —",
+        options: companyOptions,
+      },
+    ],
+    [companyOptions]
+  );
 
   const reloadCompanies = async () => {
     if (!user?.uid) return;
@@ -71,14 +98,16 @@ export default function CompanyRolesPage() {
       }
       const list = await getCompanies();
       setCompanies(list);
-      if (!companyId && list.length === 1) setCompanyId(list[0]!.id);
+      if (!String(filters.companyId ?? "").trim() && list.length === 1) {
+        setFilters((prev) => ({ ...prev, companyId: list[0]!.id }));
+      }
     } catch {
       setCompanies([]);
     }
   };
 
   const reloadRoles = async () => {
-    const cid = companyId.trim();
+    const cid = String(filters.companyId ?? "").trim();
     if (!cid) {
       setItems([]);
       setLoading(false);
@@ -87,7 +116,7 @@ export default function CompanyRolesPage() {
     setLoading(true);
     setError(null);
     try {
-      const next = await listWebCompanyRoles(cid);
+      const next = await listCompanyRoles(cid);
       setItems(next);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error al cargar roles");
@@ -105,7 +134,7 @@ export default function CompanyRolesPage() {
   useEffect(() => {
     void reloadRoles();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [companyId, accountId]);
+  }, [filters.companyId, accountId]);
 
   const handleFilter = (value: string) => {
     setFilterValue(value);
@@ -117,14 +146,14 @@ export default function CompanyRolesPage() {
     setDialogVisible(true);
   };
 
-  const openEdit = (row: WebCompanyRoleRecord) => {
+  const openEdit = (row: CompanyRoleRecord) => {
     if (row.readonly) return;
     setEditingId(row.id);
     setDialogVisible(true);
   };
 
-  const openPermissions = (row: WebCompanyRoleRecord) => {
-    const cid = companyId.trim();
+  const openPermissions = (row: CompanyRoleRecord) => {
+    const cid = String(filters.companyId ?? "").trim();
     const search = cid ? `?companyId=${encodeURIComponent(cid)}` : "";
     navigate({ pathname: `/company-roles/${encodeURIComponent(row.id)}`, search });
   };
@@ -141,8 +170,8 @@ export default function CompanyRolesPage() {
     if (!ids?.length) return;
     setDeleteSaving(true);
     try {
-      const cid = companyId.trim();
-      await Promise.all(ids.map((id) => deleteWebCompanyRole(id, cid || null)));
+      const cid = String(filters.companyId ?? "").trim();
+      await Promise.all(ids.map((id) => deleteCompanyRole(id, cid || null)));
       tableRef.current?.clearSelectedRows();
       setPendingDeleteIds(null);
       await reloadRoles();
@@ -159,11 +188,26 @@ export default function CompanyRolesPage() {
 
   if (!user) return null;
 
-  const selectedCompanyId = companyId.trim() || null;
+  const selectedCompanyId = String(filters.companyId ?? "").trim() || null;
 
   return (
     <>
-      <DpContent title="ROLES POR EMPRESA (WEB)" breadcrumbItems={["ADMIN", "ROLES WEB"]} onCreate={openAdd}>
+      <DpContent
+        title="ROLES POR EMPRESA (WEB)"
+        breadcrumbItems={["ADMIN", "ROLES WEB"]}
+        onFilterAction={() => contentFilterRef.current?.toggle()}
+        onCreate={openAdd}
+      >
+        <DpContentFilter
+          ref={contentFilterRef}
+          defaultShow={true}
+          filterDefs={filterDefs}
+          initialValues={defaultCompanyRoleFilters as Record<string, unknown>}
+          values={filters as Record<string, unknown>}
+          onValuesChange={(next) => setFilters(next as CompanyRolesFiltersForm)}
+          onSearch={(mapped) => setFilters(mapped as CompanyRolesFiltersForm)}
+          searchLabel="Buscar"
+        />
         <DpContentHeader
           filterValue={filterValue}
           onFilter={handleFilter}
@@ -186,28 +230,7 @@ export default function CompanyRolesPage() {
           </div>
         )}
 
-        <p className="mb-2 text-sm text-[var(--dp-on-surface-soft)]">
-          Roles de la app Web por empresa (Firestore Web, colección <code>roles</code>). Los roles del panel Admin están
-          en <code>/roles</code>.
-        </p>
-
-        <div className="mb-4 max-w-md">
-          <label className="block text-sm font-medium text-[var(--dp-on-surface)]">Empresa</label>
-          <select
-            value={companyId}
-            onChange={(e) => setCompanyId(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-[var(--dp-outline-soft)] bg-white/60 px-3 py-2 outline-none dark:bg-white/5"
-          >
-            <option value="">— Selecciona empresa —</option>
-            {companyOptions.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <DpTable<WebCompanyRoleRecord>
+        <DpTable<CompanyRoleRecord>
           ref={tableRef}
           data={items}
           loading={isLoading && !!selectedCompanyId}
@@ -224,7 +247,7 @@ export default function CompanyRolesPage() {
         />
       </DpContent>
 
-      <WebCompanyRoleDialog
+      <CompanyRoleDialog
         visible={dialogVisible}
         companyId={selectedCompanyId}
         roleId={editingId}

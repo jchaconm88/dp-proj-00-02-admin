@@ -1,5 +1,10 @@
+export type AccountStatus = "active" | "inactive";
+
 export type AccountRecord = {
   id: string;
   name: string;
-  status: "active" | "inactive";
+  status: AccountStatus;
+  website?: string;
+  industry?: string;
+  location?: string;
 };

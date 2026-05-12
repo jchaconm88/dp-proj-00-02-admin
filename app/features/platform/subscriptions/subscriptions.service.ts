@@ -1,15 +1,26 @@
 import { adminFetch } from "~/lib/backend-client";
-import type { SubscriptionRecord } from "./subscriptions.types";
+import type { BillingCycle, SubscriptionRecord, SubscriptionStatus } from "./subscriptions.types";
 
 const BASE = "/admin/platform/subscriptions";
+
+export type CreateSubscriptionInput = {
+  id?: string;
+  accountId?: string;
+  planId: string;
+  status?: SubscriptionStatus;
+  billingCycle?: BillingCycle;
+  nextRenewalAt?: string;
+  amountCents?: number;
+  currency?: string;
+};
+
+export type UpdateSubscriptionInput = Partial<Omit<SubscriptionRecord, "id">>;
 
 export async function getSubscriptions(): Promise<SubscriptionRecord[]> {
   return adminFetch<SubscriptionRecord[]>(BASE);
 }
 
-export async function createSubscription(
-  data: Omit<SubscriptionRecord, "id"> & { id?: string }
-): Promise<SubscriptionRecord> {
+export async function createSubscription(data: CreateSubscriptionInput): Promise<SubscriptionRecord> {
   return adminFetch<SubscriptionRecord>(BASE, {
     method: "POST",
     body: JSON.stringify({ ...data, accountId: undefined }),
@@ -18,7 +29,7 @@ export async function createSubscription(
 
 export async function updateSubscription(
   id: string,
-  data: Partial<Omit<SubscriptionRecord, "id">>
+  data: UpdateSubscriptionInput
 ): Promise<SubscriptionRecord> {
   return adminFetch<SubscriptionRecord>(`${BASE}/${id}`, {
     method: "PUT",

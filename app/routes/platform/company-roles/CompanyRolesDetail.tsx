@@ -3,10 +3,10 @@ import { useNavigate, useParams, useSearchParams } from "react-router";
 import { Checkbox } from "primereact/checkbox";
 import { DpContentInfo, DpContentHeader, DpTable } from "~/components/ui";
 import type { DpTableDefColumn, DpTableRef } from "~/components/ui";
-import { getWebCompanyRoleById, updateWebCompanyRole, type WebCompanyRoleRecord } from "~/features/platform/web-roles";
+import { getCompanyRoleById, updateCompanyRole, type CompanyRoleRecord } from "~/features/platform/web-roles";
 import type { RolePermissions } from "~/features/system/roles/roles.types";
-import WebCompanyRoleDialog from "./WebCompanyRoleDialog";
-import WebCompanyRolePermissionDialog from "./WebCompanyRolePermissionDialog";
+import CompanyRoleDialog from "./CompanyRoleDialog";
+import CompanyRolePermissionDialog from "./CompanyRolePermissionDialog";
 
 const PERMISSIONS_TABLE_DEF: DpTableDefColumn[] = [
   { header: "Módulo", column: "moduleId", order: 1, display: true, filter: true },
@@ -31,7 +31,7 @@ export default function CompanyRolesDetail() {
   const roleId = roleIdParam ?? "";
   const companyIdFromQuery = String(searchParams.get("companyId") ?? "").trim();
 
-  const [role, setRole] = useState<WebCompanyRoleRecord | null>(null);
+  const [role, setRole] = useState<CompanyRoleRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -49,7 +49,7 @@ export default function CompanyRolesDetail() {
     setLoading(true);
     setError(null);
     try {
-      const r = await getWebCompanyRoleById(roleId, companyIdFromQuery || null);
+      const r = await getCompanyRoleById(roleId, companyIdFromQuery || null);
       setRole(r);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error al cargar rol");
@@ -89,7 +89,7 @@ export default function CompanyRolesDetail() {
     setSaving(true);
     setError(null);
     try {
-      await updateWebCompanyRole(roleId, { permissions: newPermissions }, role.companyId || companyIdFromQuery || null);
+      await updateCompanyRole(roleId, { permissions: newPermissions }, role.companyId || companyIdFromQuery || null);
       permissionTableRef.current?.clearSelectedRows();
       void loadRole();
     } catch (err) {
@@ -120,7 +120,7 @@ export default function CompanyRolesDetail() {
       delete newPermissions[FULL_ACCESS_MODULE];
     }
     try {
-      await updateWebCompanyRole(roleId, { permissions: newPermissions }, role.companyId || companyIdFromQuery || null);
+      await updateCompanyRole(roleId, { permissions: newPermissions }, role.companyId || companyIdFromQuery || null);
       void loadRole();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al actualizar acceso total.");
@@ -229,7 +229,7 @@ export default function CompanyRolesDetail() {
           />
         </section>
 
-        <WebCompanyRolePermissionDialog
+        <CompanyRolePermissionDialog
           visible={permissionDialogOpen}
           roleId={roleId || null}
           companyId={role.companyId || companyIdFromQuery || null}
@@ -239,7 +239,7 @@ export default function CompanyRolesDetail() {
           onHide={() => setPermissionDialogOpen(false)}
         />
 
-        <WebCompanyRoleDialog
+        <CompanyRoleDialog
           visible={editRoleOpen}
           companyId={role.companyId}
           roleId={roleId || null}

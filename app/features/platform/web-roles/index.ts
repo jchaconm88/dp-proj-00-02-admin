@@ -1,8 +1,8 @@
-export type { WebCompanyRoleRecord } from "./web-roles.types";
+export type { CompanyRoleRecord } from "./web-roles.types";
 export {
-  listWebCompanyRoles,
-  getWebCompanyRoleById,
-  createWebCompanyRole,
-  updateWebCompanyRole,
-  deleteWebCompanyRole,
+  listCompanyRoles,
+  getCompanyRoleById,
+  createCompanyRole,
+  updateCompanyRole,
+  deleteCompanyRole,
 } from "./web-roles.service";

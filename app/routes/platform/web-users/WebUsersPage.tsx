@@ -149,11 +149,6 @@ export default function WebUsersPage() {
           </div>
         )}
 
-        <p className="mb-2 text-sm text-[var(--dp-on-surface-soft)]">
-          Usuarios de la aplicación Web (Firestore Web, colección <code>users</code>). No confundir con usuarios del panel
-          Admin en <code>/users</code>.
-        </p>
-
         <DpTable<WebAppUserRecord>
           ref={tableRef}
           data={items}

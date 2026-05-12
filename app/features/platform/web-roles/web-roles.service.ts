@@ -1,6 +1,6 @@
 import type { RolePermissions } from "~/features/system/roles/roles.types";
 import { adminFetch } from "~/lib/backend-client";
-import type { WebCompanyRoleRecord } from "./web-roles.types";
+import type { CompanyRoleRecord } from "./web-roles.types";
 
 const BASE = "/admin/platform/web-roles";
 
@@ -9,7 +9,7 @@ function withCompanyQuery(path: string, companyId: string): string {
   return `${path}${sep}companyId=${encodeURIComponent(companyId.trim())}`;
 }
 
-function normalize(id: string, data: Record<string, unknown>): WebCompanyRoleRecord {
+function normalize(id: string, data: Record<string, unknown>): CompanyRoleRecord {
   return {
     id,
     companyId: String(data.companyId ?? "").trim(),
@@ -27,13 +27,13 @@ function normalize(id: string, data: Record<string, unknown>): WebCompanyRoleRec
   };
 }
 
-export async function listWebCompanyRoles(companyId: string): Promise<WebCompanyRoleRecord[]> {
+export async function listCompanyRoles(companyId: string): Promise<CompanyRoleRecord[]> {
   const q = `?companyId=${encodeURIComponent(companyId.trim())}`;
   const rows = await adminFetch<Record<string, unknown>[]>(`${BASE}${q}`);
   return rows.map((d) => normalize(String(d.id), d));
 }
 
-export async function getWebCompanyRoleById(id: string, companyId?: string | null): Promise<WebCompanyRoleRecord | null> {
+export async function getCompanyRoleById(id: string, companyId?: string | null): Promise<CompanyRoleRecord | null> {
   try {
     const cid = String(companyId ?? "").trim();
     const path = cid ? withCompanyQuery(`${BASE}/${encodeURIComponent(id)}`, cid) : `${BASE}/${encodeURIComponent(id)}`;
@@ -44,7 +44,7 @@ export async function getWebCompanyRoleById(id: string, companyId?: string | nul
   }
 }
 
-export async function createWebCompanyRole(args: {
+export async function createCompanyRole(args: {
   companyId: string;
   name: string;
   description: string;
@@ -66,9 +66,9 @@ export async function createWebCompanyRole(args: {
   return res.id;
 }
 
-export async function updateWebCompanyRole(
+export async function updateCompanyRole(
   id: string,
-  data: Partial<Pick<WebCompanyRoleRecord, "name" | "description" | "permissions" | "permission" | "platform">>,
+  data: Partial<Pick<CompanyRoleRecord, "name" | "description" | "permissions" | "permission" | "platform">>,
   companyId?: string | null
 ): Promise<void> {
   const cid = String(companyId ?? "").trim();
@@ -79,7 +79,7 @@ export async function updateWebCompanyRole(
   });
 }
 
-export async function deleteWebCompanyRole(id: string, companyId?: string | null): Promise<void> {
+export async function deleteCompanyRole(id: string, companyId?: string | null): Promise<void> {
   const cid = String(companyId ?? "").trim();
   const path = cid ? withCompanyQuery(`${BASE}/${encodeURIComponent(id)}`, cid) : `${BASE}/${encodeURIComponent(id)}`;
   await adminFetch(path, { method: "DELETE" });
