@@ -9,6 +9,8 @@ import { canNavigateToModule, isGranted } from "~/lib/accessService";
 import { getEffectivePermissions } from "~/lib/effective-permissions";
 import { getMyAdminUser } from "~/lib/admin-user.service";
 import { listAdminRoles, type AdminRoleRecord } from "~/lib/admin-roles.service";
+import { useCountry } from "~/lib/country-context";
+import { Dropdown } from "primereact/dropdown";
 
 export async function clientLoader({}: Route.ClientLoaderArgs) {
   const user = await getAuthUser();
@@ -111,6 +113,7 @@ function MenuLoadingBlock({ sidebarOpen }: { sidebarOpen: boolean }) {
 export default function DashboardLayout() {
   const { user, loading: authLoading, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
+  const { activeCountry, countryOptions, setActiveCountry } = useCountry();
   const navigate = useNavigate();
   const navigation = useNavigation();
   const pathname = useLocation().pathname;
@@ -197,6 +200,31 @@ export default function DashboardLayout() {
     });
   };
 
+  const activeMenuTitle = useMemo(() => {
+    let best: string | null = null;
+    let bestLen = 0;
+    for (const section of sections) {
+      for (const item of section.items) {
+        if (!item.children?.length) continue;
+        for (const child of item.children) {
+          const link = (child.link ?? "").trim();
+          if (!link || link === "#") continue;
+          if (pathname === link || pathname.startsWith(link + "/")) {
+            if (link.length > bestLen) {
+              bestLen = link.length;
+              best = item.title;
+            }
+          }
+        }
+      }
+    }
+    return best;
+  }, [sections, pathname]);
+
+  useEffect(() => {
+    if (activeMenuTitle) setExpandedKeys(new Set([activeMenuTitle]));
+  }, [activeMenuTitle]);
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-[var(--dp-surface)] text-[var(--dp-on-surface)] flex items-center justify-center p-6">
@@ -227,31 +255,6 @@ export default function DashboardLayout() {
     { name: "Claro", code: "light" },
     { name: "Oscuro", code: "dark" },
   ];
-
-  const activeMenuTitle = useMemo(() => {
-    let best: string | null = null;
-    let bestLen = 0;
-    for (const section of sections) {
-      for (const item of section.items) {
-        if (!item.children?.length) continue;
-        for (const child of item.children) {
-          const link = (child.link ?? "").trim();
-          if (!link || link === "#") continue;
-          if (pathname === link || pathname.startsWith(link + "/")) {
-            if (link.length > bestLen) {
-              bestLen = link.length;
-              best = item.title;
-            }
-          }
-        }
-      }
-    }
-    return best;
-  }, [sections, pathname]);
-
-  useEffect(() => {
-    if (activeMenuTitle) setExpandedKeys(new Set([activeMenuTitle]));
-  }, [activeMenuTitle]);
 
   return (
     <div className="min-h-screen bg-[var(--dp-surface)] text-[var(--dp-on-surface)]">
@@ -475,6 +478,20 @@ export default function DashboardLayout() {
           </button>
 
           <div className="hidden items-center gap-2 md:flex">
+            <Dropdown
+              value={activeCountry}
+              onChange={(e) => {
+                const next = String(e.value ?? "PE").toUpperCase();
+                if (next !== "PE" || next === activeCountry) return;
+                setActiveCountry("PE");
+              }}
+              options={countryOptions.map((x) => ({ name: x.name, code: x.code }))}
+              optionLabel="name"
+              optionValue="code"
+              placeholder="País"
+              className="w-36"
+              disabled={countryOptions.length <= 1}
+            />
             <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-[var(--dp-surface-low)]/70 px-2.5 py-1">
               <i className="pi pi-user text-xs text-[var(--dp-on-surface-soft)]" aria-hidden />
               <span className="max-w-40 truncate text-xs font-semibold text-[var(--dp-on-surface)]">

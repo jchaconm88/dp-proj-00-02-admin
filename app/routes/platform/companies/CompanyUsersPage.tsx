@@ -4,8 +4,8 @@ import {
   deleteCompanyUser,
   getCompanyUsersByCompanyId,
   type CompanyUserRecord,
-} from "~/features/platform/company-users/company-users.service";
-import { getCompanyById } from "~/features/platform/companies/companies.service";
+} from "~/features/platform/company-users/index";
+import { getCompanyById } from "~/features/platform/companies/index";
 import type { Route } from "./+types/CompanyUsersPage";
 import { DpContentHeader, DpContentInfo } from "~/components/ui";
 import { DpTable, type DpTableRef } from "~/components/ui";
@@ -145,7 +145,7 @@ export default function CompanyUsersPage() {
   };
 
   const handleHide = () => navigate(basePath);
-  const handleBack = () => navigate("/companies");
+  const handleBack = () => navigate("/platform/companies");
 
   return (
     <DpContentInfo

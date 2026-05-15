@@ -31,9 +31,9 @@
     "enabled": true,
     "icon": "globe",
     "children": [
-      { "title": "Empresas", "link": "/companies", "permission": ["view", "company"] },
+      { "title": "Empresas", "link": "/platform/companies", "permission": ["view", "company"] },
       { "title": "Billing (Uso)", "link": "/billing/usage", "permission": ["view", "billing"] },
-      { "title": "Usuarios", "link": "/web-users", "permission": ["view", "web-user"] },
+      { "title": "Usuarios", "link": "/platform/users", "permission": ["view", "web-user"] },
       { "title": "Roles por empresa", "link": "/company-roles", "permission": ["view", "web-role"] }
     ]
   },

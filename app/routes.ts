@@ -16,21 +16,25 @@ export default [
       route("add", "routes/system/sequences/SequenceAdd.tsx"),
       route("edit/:id", "routes/system/sequences/SequenceEdit.tsx"),
     ]),
-    route("web-users", "routes/platform/web-users/WebUsersPage.tsx"),
+    route("platform/users", "routes/platform/users/UsersPage.tsx", [
+      route("add", "routes/platform/users/UserAdd.tsx"),
+      route("edit/:id", "routes/platform/users/UserEdit.tsx"),
+    ]),
     route("company-roles", "routes/platform/company-roles/CompanyRolesPage.tsx"),
     route("company-roles/:id", "routes/platform/company-roles/CompanyRolesDetail.tsx"),
     route("accounts", "routes/platform/accounts/AccountsRedirect.tsx"),
     route("account", "routes/system/account/AccountPage.tsx"),
-    route("companies", "routes/platform/companies/CompaniesPage.tsx"),
-    route("companies/add", "routes/platform/companies/CompaniesPage.tsx", {
-      id: "routes/platform/companies/CompaniesPage/add",
-    }),
-    route("companies/edit/:id", "routes/platform/companies/CompaniesPage.tsx", {
-      id: "routes/platform/companies/CompaniesPage/edit",
-    }),
-    route("companies/:id/company-users", "routes/platform/companies/CompanyUsersPage.tsx", [
+    route("platform/companies", "routes/platform/companies/CompaniesPage.tsx", [
+      route("add", "routes/platform/companies/CompanyAdd.tsx"),
+      route("edit/:id", "routes/platform/companies/CompanyEdit.tsx"),
+    ]),
+    route("platform/companies/:id/company-users", "routes/platform/companies/CompanyUsersPage.tsx", [
       route("add", "routes/platform/companies/CompanyUserAdd.tsx"),
       route("edit/:companyUserDocId", "routes/platform/companies/CompanyUserEdit.tsx"),
+    ]),
+    route("platform/companies/:id/company-locations", "routes/platform/companies/CompanyLocationsPage.tsx", [
+      route("add", "routes/platform/companies/CompanyLocationAdd.tsx"),
+      route("edit/:locationId", "routes/platform/companies/CompanyLocationEdit.tsx"),
     ]),
     route("plans", "routes/system/plans/PlansPage.tsx"),
     route("plans/add", "routes/system/plans/PlansPage.tsx", { id: "routes/system/plans/PlansPage/add" }),

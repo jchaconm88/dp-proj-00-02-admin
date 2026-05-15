@@ -7,7 +7,7 @@ import {
   createCompanyUser,
   updateCompanyUser,
   type CompanyUserRecord,
-} from "~/features/platform/company-users/company-users.service";
+} from "~/features/platform/company-users/index";
 import { listCompanyRoles, type CompanyRoleRecord } from "~/features/platform/web-roles";
 import { listWebAppUsers, type WebAppUserRecord } from "~/features/platform/web-users";
 

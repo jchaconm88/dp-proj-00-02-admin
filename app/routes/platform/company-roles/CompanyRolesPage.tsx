@@ -13,8 +13,8 @@ import {
 } from "~/components/ui";
 import { useAuth } from "~/lib/auth-context";
 import { getMyAdminUser } from "~/lib/admin-user.service";
-import { getCompanies } from "~/features/platform/companies/companies.service";
-import type { CompanyRecord } from "~/features/platform/companies/companies.types";
+import { getCompanies } from "~/features/platform/companies/index";
+import type { CompanyRecord } from "~/features/platform/companies/index";
 import {
   deleteCompanyRole,
   listCompanyRoles,

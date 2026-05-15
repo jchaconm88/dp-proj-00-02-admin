@@ -5,6 +5,7 @@ const BASE = "/admin/platform/companies";
 
 const TAX_ID_DUPLICATE_MSG = "Ya existe una empresa con ese RUC";
 const CODE_DUPLICATE_MSG = "Ya existe una empresa con ese código";
+const CONFIG_MSG = "Configuración monetaria inválida. Verifique país, monedas permitidas y moneda por defecto.";
 
 function rethrowIfCompanyCreateConflict(e: unknown): never {
   if (e instanceof Error) {
@@ -18,6 +19,14 @@ function rethrowIfCompanyCreateConflict(e: unknown): never {
     if (body.includes("HTTP 409")) {
       throw new Error(CODE_DUPLICATE_MSG);
     }
+    if (
+      body.includes("countryCode_invalid") ||
+      body.includes("allowedCurrencies_required") ||
+      body.includes("defaultCurrency_invalid") ||
+      body.includes("HTTP 422")
+    ) {
+      throw new Error(CONFIG_MSG);
+    }
   }
   throw e;
 }
@@ -28,11 +37,24 @@ function rethrowIfTaxIdDuplicate(e: unknown): never {
     if (body.includes("taxid_duplicate") || body.includes("HTTP 409")) {
       throw new Error(TAX_ID_DUPLICATE_MSG);
     }
+    if (
+      body.includes("countryCode_invalid") ||
+      body.includes("allowedCurrencies_required") ||
+      body.includes("defaultCurrency_invalid") ||
+      body.includes("HTTP 422")
+    ) {
+      throw new Error(CONFIG_MSG);
+    }
   }
   throw e;
 }
 
-export type CompanyCreateInput = Omit<CompanyRecord, "id" | "accountId"> & { code: string };
+export type CompanyCreateInput = Omit<CompanyRecord, "id" | "accountId"> & {
+  code: string;
+  countryCode: "PE";
+  allowedCurrencies: Array<"PEN" | "USD" | "EUR">;
+  defaultCurrency: "PEN" | "USD" | "EUR";
+};
 
 export async function getCompanies(): Promise<CompanyRecord[]> {
   return adminFetch<CompanyRecord[]>(BASE);

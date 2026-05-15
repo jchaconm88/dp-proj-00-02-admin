@@ -5,6 +5,7 @@ import { ThemeProvider } from "./lib/theme-context";
 import { LoadingProvider } from "./lib/loading-context";
 import PaceLoader from "./components/PaceLoader";
 import { AuthProvider } from "./lib/auth-context";
+import { CountryProvider } from "./lib/country-context";
 import "./app.css";
 
 addLocale("es", {
@@ -61,8 +62,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <ThemeProvider>
             <LoadingProvider>
               <AuthProvider>
-                <PaceLoader />
-                {children}
+                <CountryProvider>
+                  <PaceLoader />
+                  {children}
+                </CountryProvider>
               </AuthProvider>
             </LoadingProvider>
           </ThemeProvider>

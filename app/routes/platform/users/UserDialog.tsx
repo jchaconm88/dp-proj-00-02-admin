@@ -102,7 +102,7 @@ export default function WebUserDialog(props: {
 
   return (
     <DpContentSet
-      title={isEdit ? "Editar usuario Web" : "Nuevo usuario Web"}
+      title={isEdit ? "Editar usuario" : "Nuevo usuario"}
       recordId={isEdit ? userIdToEdit : null}
       visible={visible}
       onHide={onHide}

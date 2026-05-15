@@ -2,8 +2,8 @@ import { useMemo } from "react";
 import { useNavigation, useLoaderData, useRevalidator } from "react-router";
 import { DpContent, DpContentHeader, DpTColumn } from "~/components/ui";
 import { DpTable } from "~/components/ui";
-import { getCompanyUsers } from "~/features/platform/company-users/company-users.service";
-import type { CompanyUserRecord } from "~/features/platform/company-users/company-users.types";
+import { getCompanyUsers } from "~/features/platform/company-users/index";
+import type { CompanyUserRecord } from "~/features/platform/company-users/index";
 import type { DpTableDefColumn, StatusSeverity } from "~/components/ui";
 
 // ─── Table definition ────────────────────────────────────────────────────────

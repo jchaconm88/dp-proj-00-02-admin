@@ -5,7 +5,7 @@ import type { DpTableDefColumn, StatusSeverity } from "~/components/ui";
 import { useAuth } from "~/lib/auth-context";
 import { getMyAdminUser } from "~/lib/admin-user.service";
 import { deleteWebAppUser, listWebAppUsers, type WebAppUserRecord } from "~/features/platform/web-users";
-import WebUserDialog from "./WebUserDialog";
+import UserDialog from "./UserDialog";
 
 const STATUS_OPTIONS: Record<string, { label: string; severity: StatusSeverity }> = {
   active: { label: "Activo", severity: "success" },
@@ -129,7 +129,7 @@ export default function WebUsersPage() {
 
   return (
     <>
-      <DpContent title="USUARIOS WEB" breadcrumbItems={["ADMIN", "USUARIOS WEB"]} onCreate={openAdd}>
+      <DpContent title="USUARIOS" breadcrumbItems={["ADMIN", "USUARIOS"]} onCreate={openAdd}>
         <DpContentHeader
           filterValue={filterValue}
           onFilter={handleFilter}
@@ -157,12 +157,12 @@ export default function WebUsersPage() {
           onEdit={openEdit}
           onSelectionChange={(rows) => setSelectedCount(rows.length)}
           showFilterInHeader={false}
-          emptyMessage="No hay usuarios Web para esta cuenta."
+          emptyMessage="No hay usuarios para esta cuenta."
           emptyFilterMessage="No hay resultados para el filtro."
         />
       </DpContent>
 
-      <WebUserDialog
+      <UserDialog
         visible={dialogVisible}
         userIdToEdit={editingId}
         onSuccess={(pw) => {
@@ -212,10 +212,10 @@ export default function WebUsersPage() {
       <DpConfirmDialog
         visible={pendingDeleteIds !== null}
         onHide={closeDeleteConfirm}
-        title="Eliminar usuarios Web"
+        title="Eliminar usuarios"
         message={
           pendingDeleteIds?.length
-            ? `¿Eliminar ${pendingDeleteIds.length} usuario(s) Web? Esta acción no se puede deshacer.`
+            ? `¿Eliminar ${pendingDeleteIds.length} usuario(s)? Esta acción no se puede deshacer.`
             : ""
         }
         confirmLabel="Eliminar"
