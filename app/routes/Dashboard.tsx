@@ -11,6 +11,7 @@ import { getMyAdminUser } from "~/lib/admin-user.service";
 import { listAdminRoles, type AdminRoleRecord } from "~/lib/admin-roles.service";
 import { useCountry } from "~/lib/country-context";
 import { Dropdown } from "primereact/dropdown";
+import { SearchTrigger, SearchOverlay, useGlobalSearch } from "~/features/global-search";
 
 export async function clientLoader({}: Route.ClientLoaderArgs) {
   const user = await getAuthUser();
@@ -182,6 +183,12 @@ export default function DashboardLayout() {
       }),
     [userRoleIds, userRoleNames, roles]
   );
+
+  const globalSearch = useGlobalSearch({
+    effectivePermissions,
+    accountId: adminAccountId,
+    userId: user?.uid ?? null,
+  });
 
   const menuLoading = !adminUserCheckedRef.current || rolesLoading;
   const filteredMenu = useMemo(
@@ -443,12 +450,7 @@ export default function DashboardLayout() {
         }}
       >
         <div className="relative w-56 md:w-80">
-          <i className="pi pi-search pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[var(--dp-on-surface-soft)]" />
-          <input
-            type="text"
-            placeholder="Search systems..."
-            className="w-full rounded-full border border-white/10 bg-[var(--dp-surface-low)]/70 py-1 pl-9 pr-4 text-sm text-[var(--dp-on-surface)] outline-none transition focus:border-[var(--dp-primary)]"
-          />
+          <SearchTrigger onClick={() => globalSearch.onOpenChange(true)} />
         </div>
 
         <div className="flex items-center gap-1 md:gap-2">
@@ -522,6 +524,24 @@ export default function DashboardLayout() {
       >
         <Outlet />
       </main>
+
+      <SearchOverlay
+        open={globalSearch.open}
+        onOpenChange={globalSearch.onOpenChange}
+        query={globalSearch.query}
+        onQueryChange={globalSearch.onQueryChange}
+        navigationResults={globalSearch.navigationResults}
+        entityResults={globalSearch.entityResults}
+        historyResults={globalSearch.historyResults}
+        entityLoading={globalSearch.entityLoading}
+        entityError={globalSearch.entityError}
+        rebuildingIndex={globalSearch.rebuildingIndex}
+        onRebuildIndex={globalSearch.onRebuildIndex}
+        onClearQuery={globalSearch.onClearQuery}
+        onSelect={globalSearch.onSelect}
+        onRemoveHistory={globalSearch.onRemoveHistory}
+        onClearHistory={globalSearch.onClearHistory}
+      />
     </div>
   );
 }
