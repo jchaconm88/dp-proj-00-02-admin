@@ -4,7 +4,6 @@
  */
 
 export interface SnapshotCard {
-  id: string;
   cardKey: string;
   metricKey: string;
   title: string;
@@ -18,6 +17,7 @@ export interface SnapshotCard {
   href: string | null;
   permissionModule: string | null;
   target: "admin" | "web" | "both";
+  order: number;
 }
 
 export interface SnapshotChartDataset {
@@ -27,7 +27,6 @@ export interface SnapshotChartDataset {
 }
 
 export interface SnapshotChart {
-  id: string;
   chartKey: string;
   title: string;
   chartType: "bar" | "line" | "pie" | "doughnut";
@@ -43,9 +42,10 @@ export interface DashboardSnapshotResponse {
   period: string;
   cards: SnapshotCard[];
   charts: SnapshotChart[];
-  hasUsageForPeriod: boolean;
-  metadata?: {
+  counters: Record<string, number>;
+  activityItems: unknown[];
+  metadata: {
     generatedAt: string;
     configSource: string;
-  };
+  } | null;
 }

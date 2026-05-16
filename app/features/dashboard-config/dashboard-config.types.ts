@@ -6,6 +6,8 @@ export type ChartType = "bar" | "line" | "pie" | "doughnut";
 export type GroupBy = "daily" | "weekly" | "monthly";
 export type DefinitionSource = "default" | "custom";
 
+export type DeltaType = "count" | "sum" | "custom";
+
 export interface MetricDefinitionRecord {
   data: {
     id: string;
@@ -14,7 +16,7 @@ export interface MetricDefinitionRecord {
     type: MetricType;
     measureType: MeasureType;
     valueFormat: ValueFormat;
-    source: { collectionName: string };
+    source: { collectionName: string; fieldName?: string; deltaType?: DeltaType };
     numeratorMetricKey?: string;
     denominatorMetricKey?: string;
     permissionModule?: string | null;
@@ -66,7 +68,7 @@ export interface MetricPayload {
   type: MetricType;
   measureType: MeasureType;
   valueFormat: ValueFormat;
-  source: { collectionName: string };
+  source: { collectionName: string; fieldName?: string; deltaType?: DeltaType };
   numeratorMetricKey?: string;
   denominatorMetricKey?: string;
   permissionModule?: string | null;

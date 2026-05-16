@@ -31,3 +31,16 @@ export async function getAdminSnapshot(
   );
 }
 
+/**
+ * Recompose el dashboard para la cuenta/periodo dados.
+ */
+export async function recomposeSnapshot(params: {
+  accountId: string;
+  period?: string;
+}): Promise<void> {
+  await adminFetch<void>("/admin/dashboard/recompose", {
+    method: "POST",
+    body: JSON.stringify(params),
+  });
+}
+

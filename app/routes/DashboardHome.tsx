@@ -1,16 +1,18 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { AdminUserRecord } from "~/lib/admin-user.service";
 import { getMyAdminUser } from "~/lib/admin-user.service";
 import { listAdminRoles, type AdminRoleRecord } from "~/lib/admin-roles.service";
 import { getEffectivePermissions } from "~/lib/effective-permissions";
 import { useAuth } from "~/lib/auth-context";
-import { AdminDashboardRenderer } from "~/features/admin-dashboard/AdminDashboardRenderer";
+import { AdminDashboardRenderer, recomposeSnapshot } from "~/features/admin-dashboard";
 
 export default function DashboardHome() {
   const { user } = useAuth();
   const [adminUser, setAdminUser] = useState<AdminUserRecord | null>(null);
   const [effectivePermissions, setEffectivePermissions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [recomposing, setRecomposing] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -39,6 +41,19 @@ export default function DashboardHome() {
       cancelled = true;
     };
   }, [user?.uid]);
+
+  const handleRecompose = useCallback(async () => {
+    if (!adminUser?.accountId) return;
+    try {
+      setRecomposing(true);
+      await recomposeSnapshot({ accountId: adminUser.accountId });
+      setRefreshKey((k) => k + 1);
+    } catch {
+      // Error is non-critical; snapshot will eventually update
+    } finally {
+      setRecomposing(false);
+    }
+  }, [adminUser?.accountId]);
 
   const title = useMemo(
     () => (adminUser?.accountId ? `Cuenta: ${adminUser.accountId}` : "Dashboard"),
@@ -77,8 +92,11 @@ export default function DashboardHome() {
       </section>
 
       <AdminDashboardRenderer
+        key={refreshKey}
         accountId={adminUser.accountId}
         effectivePermissions={effectivePermissions}
+        onRecompose={handleRecompose}
+        recomposing={recomposing}
       />
     </div>
   );

@@ -7,6 +7,7 @@ import type {
   MeasureType,
   ValueFormat,
   TargetType,
+  DeltaType,
 } from "./dashboard-config.types";
 import * as svc from "./dashboard-config.service";
 
@@ -42,6 +43,12 @@ const TARGET_TYPE_OPTIONS = [
   { label: "Ambos", value: "both" },
 ];
 
+const DELTA_TYPE_OPTIONS = [
+  { label: "Count", value: "count" },
+  { label: "Sum", value: "sum" },
+  { label: "Custom", value: "custom" },
+];
+
 interface FormErrors {
   metricKey?: string;
   label?: string;
@@ -51,6 +58,8 @@ interface FormErrors {
   collectionName?: string;
   numeratorMetricKey?: string;
   denominatorMetricKey?: string;
+  deltaType?: string;
+  fieldName?: string;
 }
 
 const METRIC_KEY_REGEX = /^[a-zA-Z0-9-]+$/;
@@ -70,6 +79,8 @@ export default function MetricDefinitionForm({
   const [valueFormat, setValueFormat] = useState<ValueFormat>("number");
   const [target, setTarget] = useState<TargetType>("admin");
   const [collectionName, setCollectionName] = useState("");
+  const [deltaType, setDeltaType] = useState<DeltaType>("count");
+  const [fieldName, setFieldName] = useState("");
   const [numeratorMetricKey, setNumeratorMetricKey] = useState("");
   const [denominatorMetricKey, setDenominatorMetricKey] = useState("");
   const [permissionModule, setPermissionModule] = useState("");
@@ -97,6 +108,8 @@ export default function MetricDefinitionForm({
       setValueFormat(d.valueFormat);
       setTarget((d as any).target ?? "admin");
       setCollectionName(d.source.collectionName);
+      setDeltaType(d.source.deltaType ?? "count");
+      setFieldName(d.source.fieldName ?? "");
       setNumeratorMetricKey(d.numeratorMetricKey ?? "");
       setDenominatorMetricKey(d.denominatorMetricKey ?? "");
       setPermissionModule(d.permissionModule ?? "");
@@ -109,6 +122,8 @@ export default function MetricDefinitionForm({
       setValueFormat("number");
       setTarget("admin");
       setCollectionName("");
+      setDeltaType("count");
+      setFieldName("");
       setNumeratorMetricKey("");
       setDenominatorMetricKey("");
       setPermissionModule("");
@@ -141,6 +156,14 @@ export default function MetricDefinitionForm({
       e.collectionName = "Collection Name es requerido";
     }
 
+    if (!deltaType) {
+      e.deltaType = "Delta Type es requerido";
+    }
+
+    if (deltaType === "sum" && !fieldName.trim()) {
+      e.fieldName = "Field Name es requerido para delta type sum";
+    }
+
     if (type === "ratio") {
       if (!numeratorMetricKey.trim()) {
         e.numeratorMetricKey = "Numerator Metric Key es requerido para tipo ratio";
@@ -166,7 +189,11 @@ export default function MetricDefinitionForm({
       type,
       measureType,
       valueFormat,
-      source: { collectionName: collectionName.trim() },
+      source: {
+        collectionName: collectionName.trim(),
+        deltaType,
+        fieldName: deltaType === "sum" ? fieldName.trim() : undefined,
+      },
       active,
       target,
       permissionModule: permissionModule.trim() || null,
@@ -304,6 +331,37 @@ export default function MetricDefinitionForm({
             <small className="text-red-500">{errors.collectionName}</small>
           )}
         </div>
+
+        <div className="flex flex-col gap-1">
+          <DpInput
+            type="select"
+            label="Delta Type"
+            name="deltaType"
+            value={deltaType}
+            onChange={(v) => { setDeltaType(v as DeltaType); clearError(); }}
+            options={DELTA_TYPE_OPTIONS}
+            placeholder="Seleccionar delta type"
+          />
+          {errors.deltaType && (
+            <small className="text-red-500">{errors.deltaType}</small>
+          )}
+        </div>
+
+        {deltaType === "sum" && (
+          <div className="flex flex-col gap-1">
+            <DpInput
+              type="input"
+              label="Field Name"
+              name="fieldName"
+              value={fieldName}
+              onChange={(v) => { setFieldName(v); clearError(); }}
+              placeholder="ej: total"
+            />
+            {errors.fieldName && (
+              <small className="text-red-500">{errors.fieldName}</small>
+            )}
+          </div>
+        )}
 
         {type === "ratio" && (
           <>
