@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import {
   useLoaderData,
   useMatch,
@@ -9,16 +9,14 @@ import {
 import { DpContent, DpContentHeader } from "~/components/ui";
 import { DpTable, type DpTableRef } from "~/components/ui";
 import { DpConfirmDialog } from "~/components/ui";
-import { DpInput } from "~/components/ui";
-import { DpContentSet } from "~/components/ui";
 import {
   getSubscriptions,
-  createSubscription,
-  updateSubscription,
   deleteSubscription,
 } from "~/features/platform/subscriptions/subscriptions.service";
 import type { SubscriptionRecord } from "~/features/platform/subscriptions/subscriptions.types";
-import type { DpTableDefColumn, StatusSeverity } from "~/components/ui";
+import type { StatusSeverity } from "~/components/ui";
+import { moduleTableDef } from "~/data/system-modules";
+import SubscriptionDialog from "./SubscriptionDialog";
 
 // ─── Table definition ────────────────────────────────────────────────────────
 
@@ -29,140 +27,13 @@ const STATUS_OPTIONS: Record<string, { label: string; severity: StatusSeverity }
   cancelled: { label: "Cancelado", severity: "danger" },
 };
 
-const SUBSCRIPTIONS_TABLE_DEF: DpTableDefColumn[] = [
-  { header: "ID", column: "id", order: 1, display: true, filter: true, sort: true },
-  { header: "Plan ID", column: "planId", order: 2, display: true, filter: true, sort: true },
-  {
-    header: "Estado",
-    column: "status",
-    order: 3,
-    display: true,
-    filter: true,
-    type: "status",
-    typeOptions: STATUS_OPTIONS,
-  },
-];
+const SUBSCRIPTIONS_TABLE_DEF = moduleTableDef("subscription", { status: STATUS_OPTIONS }).map((c) => ({ ...c, sort: true }));
 
 // ─── Loader ───────────────────────────────────────────────────────────────────
 
 export async function clientLoader() {
   const items = await getSubscriptions();
   return { items };
-}
-
-// ─── SubscriptionDialog ───────────────────────────────────────────────────────
-
-interface SubscriptionDialogProps {
-  visible: boolean;
-  item: SubscriptionRecord | null;
-  onHide: () => void;
-  onSaved: () => void;
-}
-
-function SubscriptionDialog({ visible, item, onHide, onSaved }: SubscriptionDialogProps) {
-  const isEdit = item !== null;
-
-  const [id, setId] = useState("");
-  const [planId, setPlanId] = useState("");
-  const [status, setStatus] = useState<SubscriptionRecord["status"]>("active");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Reset form when dialog opens/closes or item changes
-  useEffect(() => {
-    if (!visible) return;
-    setError(null);
-    if (item) {
-      setId(item.id);
-      setPlanId(item.planId);
-      setStatus(item.status);
-    } else {
-      setId("");
-      setPlanId("");
-      setStatus("active");
-    }
-  }, [visible, item]);
-
-  const valid =
-    id.trim().length > 0 &&
-    planId.trim().length > 0;
-
-  const handleSave = async () => {
-    if (!valid) return;
-    setSaving(true);
-    setError(null);
-    try {
-      if (isEdit) {
-        await updateSubscription(item.id, {
-          accountId: item.accountId,
-          planId: planId.trim(),
-          status,
-        });
-      } else {
-        await createSubscription({
-          id: id.trim(),
-          accountId: "current",
-          planId: planId.trim(),
-          status,
-        });
-      }
-      onSaved();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Error al guardar");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const STATUS_SELECT_OPTIONS = [
-    { label: "Activo", value: "active" },
-    { label: "Inactivo", value: "inactive" },
-    { label: "Suspendido", value: "suspended" },
-    { label: "Cancelado", value: "cancelled" },
-  ];
-
-  return (
-    <DpContentSet
-      title={isEdit ? "Editar suscripción" : "Nueva suscripción"}
-      recordId={isEdit ? item.id : null}
-      visible={visible}
-      onHide={onHide}
-      onCancel={onHide}
-      onSave={handleSave}
-      saving={saving}
-      saveDisabled={!valid}
-      showError={!!error}
-      errorMessage={error ?? ""}
-    >
-      <div className="flex flex-col gap-4 pt-2">
-        <DpInput
-          type="input"
-          label="ID"
-          name="subscriptionId"
-          value={id}
-          onChange={setId}
-          disabled={isEdit}
-          placeholder="Identificador único del documento"
-        />
-        <DpInput
-          type="input"
-          label="Plan ID"
-          name="subscriptionPlanId"
-          value={planId}
-          onChange={setPlanId}
-          placeholder="ID del plan"
-        />
-        <DpInput
-          type="select"
-          label="Estado"
-          name="subscriptionStatus"
-          value={status}
-          onChange={(v) => setStatus(v as SubscriptionRecord["status"])}
-          options={STATUS_SELECT_OPTIONS}
-        />
-      </div>
-    </DpContentSet>
-  );
 }
 
 // ─── SubscriptionsPage ────────────────────────────────────────────────────────
@@ -260,12 +131,14 @@ export default function SubscriptionsPage() {
         />
       </DpContent>
 
-      <SubscriptionDialog
-        visible={showDialog}
-        item={dialogItem}
-        onHide={handleHide}
-        onSaved={handleSaved}
-      />
+      {showDialog && (
+        <SubscriptionDialog
+          visible={showDialog}
+          item={dialogItem}
+          onHide={handleHide}
+          onSaved={handleSaved}
+        />
+      )}
 
       <DpConfirmDialog
         visible={pendingDeleteIds !== null}

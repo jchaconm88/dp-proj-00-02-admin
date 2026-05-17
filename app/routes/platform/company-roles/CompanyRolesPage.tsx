@@ -8,9 +8,9 @@ import {
   DpTable,
   type DpContentFilterRef,
   type DpFilterDef,
-  type DpTableDefColumn,
   type DpTableRef,
 } from "~/components/ui";
+import { moduleTableDef } from "~/data/system-modules";
 import { useAuth } from "~/lib/auth-context";
 import { getMyAdminUser } from "~/lib/admin-user.service";
 import { getCompanies } from "~/features/platform/companies/index";
@@ -22,10 +22,7 @@ import {
 } from "~/features/platform/web-roles";
 import CompanyRoleDialog from "./CompanyRoleDialog";
 
-const TABLE_DEF: DpTableDefColumn[] = [
-  { header: "Nombre", column: "name", order: 1, display: true, filter: true, sort: true },
-  { header: "Descripción", column: "description", order: 2, display: true, filter: true, sort: true },
-];
+const TABLE_DEF = moduleTableDef("company-role").map((c) => ({ ...c, sort: true }));
 
 type CompanyRolesFiltersForm = {
   companyId: string;
@@ -247,16 +244,18 @@ export default function CompanyRolesPage() {
         />
       </DpContent>
 
-      <CompanyRoleDialog
-        visible={dialogVisible}
-        companyId={selectedCompanyId}
-        roleId={editingId}
-        onSuccess={async () => {
-          setDialogVisible(false);
-          await reloadRoles();
-        }}
-        onHide={() => setDialogVisible(false)}
-      />
+      {dialogVisible && (
+        <CompanyRoleDialog
+          visible={dialogVisible}
+          companyId={selectedCompanyId}
+          roleId={editingId}
+          onSuccess={async () => {
+            setDialogVisible(false);
+            await reloadRoles();
+          }}
+          onHide={() => setDialogVisible(false)}
+        />
+      )}
 
       <DpConfirmDialog
         visible={pendingDeleteIds !== null}

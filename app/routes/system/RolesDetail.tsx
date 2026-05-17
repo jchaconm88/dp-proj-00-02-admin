@@ -2,15 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { Checkbox } from "primereact/checkbox";
 import { DpContentInfo, DpContentHeader, DpTable } from "~/components/ui";
-import type { DpTableDefColumn, DpTableRef } from "~/components/ui";
+import type { DpTableRef } from "~/components/ui";
+import { moduleTableDef } from "~/data/system-modules";
 import { getRoleById, updateRole, type RoleRecord, type RolePermissions } from "~/features/system/roles";
 import RoleDialog from "./RoleDialog";
 import RolePermissionDialog from "./RolePermissionDialog";
 
-const PERMISSIONS_TABLE_DEF: DpTableDefColumn[] = [
-  { header: "Módulo", column: "moduleId", order: 1, display: true, filter: true },
-  { header: "Permisos", column: "permissions", order: 2, display: true, filter: true },
-];
+const PERMISSIONS_TABLE_DEF = moduleTableDef("role-permission");
 
 const FULL_ACCESS_MODULE = "*";
 const FULL_ACCESS_CODE = "*";
@@ -222,22 +220,26 @@ export default function RolesDetail() {
           />
         </section>
 
-        <RolePermissionDialog
-          visible={permissionDialogOpen}
-          roleId={roleId || null}
-          readOnly={!!role.readonly}
-          editModuleId={permissionEditModuleId}
-          onSuccess={async () => { setPermissionDialogOpen(false); void loadRole(); }}
-          onHide={() => setPermissionDialogOpen(false)}
-        />
+        {permissionDialogOpen && (
+          <RolePermissionDialog
+            visible={permissionDialogOpen}
+            roleId={roleId || null}
+            readOnly={!!role.readonly}
+            editModuleId={permissionEditModuleId}
+            onSuccess={async () => { setPermissionDialogOpen(false); void loadRole(); }}
+            onHide={() => setPermissionDialogOpen(false)}
+          />
+        )}
 
-        <RoleDialog
-          visible={editRoleOpen}
-          accountId={role.accountId}
-          roleId={roleId || null}
-          onSuccess={() => { setEditRoleOpen(false); void loadRole(); }}
-          onHide={() => setEditRoleOpen(false)}
-        />
+        {editRoleOpen && (
+          <RoleDialog
+            visible={editRoleOpen}
+            accountId={role.accountId}
+            roleId={roleId || null}
+            onSuccess={() => { setEditRoleOpen(false); void loadRole(); }}
+            onHide={() => setEditRoleOpen(false)}
+          />
+        )}
       </div>
     </DpContentInfo>
   );

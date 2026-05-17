@@ -14,7 +14,8 @@ import {
   deleteCompany,
   type CompanyRecord,
 } from "~/features/platform/companies/index";
-import type { DpTableDefColumn, StatusSeverity } from "~/components/ui";
+import type { StatusSeverity } from "~/components/ui";
+import { moduleTableDef } from "~/data/system-modules";
 import CompanyDialog from "./CompanyDialog";
 
 const STATUS_OPTIONS: Record<string, { label: string; severity: StatusSeverity }> = {
@@ -22,22 +23,10 @@ const STATUS_OPTIONS: Record<string, { label: string; severity: StatusSeverity }
   inactive: { label: "Inactivo", severity: "secondary" },
 };
 
-const COMPANIES_TABLE_DEF: DpTableDefColumn[] = [
-  { header: "Nombre", column: "name", order: 1, display: true, filter: true, sort: true },
-  {
-    header: "Estado",
-    column: "status",
-    order: 2,
-    display: true,
-    filter: true,
-    type: "status",
-    typeOptions: STATUS_OPTIONS,
-  },
-  { header: "Código", column: "code", order: 3, display: true, filter: true, sort: true },
-  { header: "RUC / Tax ID", column: "taxId", order: 4, display: true, filter: true, sort: true },
-  { header: "Miembros", column: "companyUsers", order: 5, display: true, filter: false, sort: false },
-  { header: "Sedes", column: "companyLocations", order: 6, display: true, filter: false, sort: false },
-];
+const COMPANIES_TABLE_DEF = moduleTableDef("company", { status: STATUS_OPTIONS }).map((c) => {
+  if (c.column === "companyUsers" || c.column === "companyLocations") return c;
+  return { ...c, sort: true };
+});
 
 export async function clientLoader() {
   const items = await getCompanies();
@@ -170,12 +159,14 @@ export default function CompaniesPage() {
         </DpTable>
       </DpContent>
 
-      <CompanyDialog
-        visible={showDialog}
-        item={dialogItem}
-        onHide={handleHide}
-        onSaved={handleSaved}
-      />
+      {showDialog && (
+        <CompanyDialog
+          visible={showDialog}
+          item={dialogItem}
+          onHide={handleHide}
+          onSaved={handleSaved}
+        />
+      )}
 
       <DpConfirmDialog
         visible={pendingDeleteIds !== null}

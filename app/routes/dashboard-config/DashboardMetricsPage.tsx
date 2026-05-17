@@ -9,9 +9,9 @@ import {
   DpTable,
   DpTColumn,
   type DpTableRef,
-  type DpTableDefColumn,
 } from "~/components/ui";
 import type { StatusSeverity } from "~/components/ui";
+import { moduleTableDef } from "~/data/system-modules";
 import { useAuth } from "~/lib/auth-context";
 import { getMyAdminUser } from "~/lib/admin-user.service";
 import { listAdminRoles } from "~/lib/admin-roles.service";
@@ -57,15 +57,11 @@ const TARGET_OPTIONS: Record<string, { label: string; severity: StatusSeverity }
   both: { label: "Ambos", severity: "warning" },
 };
 
-const METRICS_TABLE_DEF: DpTableDefColumn[] = [
-  { header: "Metric Key", column: "metricKey", order: 1, display: true, filter: true, sort: true },
-  { header: "Label", column: "label", order: 2, display: true, filter: true, sort: true },
-  { header: "Tipo", column: "type", order: 3, display: true, filter: true, sort: true },
-  { header: "Medición", column: "measureType", order: 4, display: true, filter: true, sort: true },
-  { header: "Target", column: "target", order: 5, display: true, filter: true, type: "status", typeOptions: TARGET_OPTIONS },
-  { header: "Source", column: "source", order: 6, display: true, filter: true, type: "status", typeOptions: SOURCE_OPTIONS },
-  { header: "Readonly", column: "readonly", order: 7, display: true, filter: true, type: "status", typeOptions: READONLY_OPTIONS },
-];
+const METRICS_TABLE_DEF = moduleTableDef("metric-definition", {
+  target: TARGET_OPTIONS,
+  source: SOURCE_OPTIONS,
+  readonly: READONLY_OPTIONS,
+}).map((c) => ({ ...c, sort: true }));
 
 // ─── Flatten helper ───────────────────────────────────────────────────────────
 

@@ -2,9 +2,10 @@ import { useMemo } from "react";
 import { useNavigation, useLoaderData, useRevalidator } from "react-router";
 import { DpContent, DpContentHeader, DpTColumn } from "~/components/ui";
 import { DpTable } from "~/components/ui";
+import { moduleTableDef } from "~/data/system-modules";
 import { getCompanyUsers } from "~/features/platform/company-users/index";
 import type { CompanyUserRecord } from "~/features/platform/company-users/index";
-import type { DpTableDefColumn, StatusSeverity } from "~/components/ui";
+import type { StatusSeverity } from "~/components/ui";
 
 // ─── Table definition ────────────────────────────────────────────────────────
 
@@ -13,21 +14,7 @@ const STATUS_OPTIONS: Record<string, { label: string; severity: StatusSeverity }
   inactive: { label: "Inactivo", severity: "secondary" },
 };
 
-const COMPANY_USERS_TABLE_DEF: DpTableDefColumn[] = [
-  { header: "ID", column: "id", order: 1, display: true, filter: true, sort: true },
-  { header: "Company ID", column: "companyId", order: 2, display: true, filter: true, sort: true },
-  { header: "User ID", column: "userId", order: 3, display: true, filter: true, sort: true },
-  { header: "Usuario", column: "userDisplay", order: 4, display: true, filter: true, sort: true },
-  {
-    header: "Estado",
-    column: "status",
-    order: 5,
-    display: true,
-    filter: true,
-    type: "status",
-    typeOptions: STATUS_OPTIONS,
-  },
-];
+const COMPANY_USERS_TABLE_DEF = moduleTableDef("platform-company-user", { status: STATUS_OPTIONS }).map((c) => ({ ...c, sort: true }));
 
 // ─── Loader ───────────────────────────────────────────────────────────────────
 

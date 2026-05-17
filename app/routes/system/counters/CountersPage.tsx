@@ -3,38 +3,26 @@ import { Outlet, useMatch, useNavigate, useNavigation, useRevalidator } from "re
 import { DpConfirmDialog, DpContent, DpContentHeader, DpTable, type DpTableRef } from "~/components/ui";
 import type { StatusSeverity } from "~/components/ui";
 import { moduleTableDef } from "~/data/system-modules";
-import { getSequences, deleteSequence, type SequenceRecord } from "~/features/system/sequences";
-import SequenceDialog from "./SequenceDialog";
+import { getCounters, deleteCounter, type CounterRecord } from "~/features/system/counters";
+import CounterDialog from "./CounterDialog";
 
-const RESET_PERIOD: Record<string, { label: string; severity: StatusSeverity }> = {
-  never: { label: "Nunca", severity: "secondary" },
-  yearly: { label: "Anual", severity: "info" },
-  monthly: { label: "Mensual", severity: "warning" },
-  daily: { label: "Diario", severity: "danger" },
-};
-
-const SOURCE_OPTIONS: Record<string, { label: string; severity: StatusSeverity }> = {
-  default: { label: "Default", severity: "secondary" },
-  custom: { label: "Custom", severity: "success" },
-};
-
-const TABLE_DEF = moduleTableDef("sequence", { resetPeriod: RESET_PERIOD, source: SOURCE_OPTIONS }).map((c) => ({ ...c, sort: true }));
+const TABLE_DEF = moduleTableDef("counter").map((c) => ({ ...c, sort: true }));
 
 export function meta() {
-  return [{ title: "Secuencias" }];
+  return [{ title: "Contadores" }];
 }
 
 export async function clientLoader() {
   return {};
 }
 
-export default function SequencesPage() {
+export default function CountersPage() {
   const navigate = useNavigate();
   const navigation = useNavigation();
   const revalidator = useRevalidator();
-  const tableRef = useRef<DpTableRef<SequenceRecord>>(null);
+  const tableRef = useRef<DpTableRef<CounterRecord>>(null);
 
-  const [items, setItems] = useState<SequenceRecord[]>([]);
+  const [items, setItems] = useState<CounterRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -42,8 +30,8 @@ export default function SequencesPage() {
   const [pendingDeleteIds, setPendingDeleteIds] = useState<string[] | null>(null);
   const [filterValue, setFilterValue] = useState("");
 
-  const addMatch = useMatch("/sequences/add");
-  const editMatch = useMatch("/sequences/edit/:id");
+  const addMatch = useMatch("/counters/add");
+  const editMatch = useMatch("/counters/edit/:id");
   const isAdd = !!addMatch;
   const editId = editMatch?.params.id ? decodeURIComponent(editMatch.params.id) : null;
   const dialogVisible = isAdd || !!editId;
@@ -57,9 +45,9 @@ export default function SequencesPage() {
     setLoading(true);
     setError(null);
     try {
-      setItems(await getSequences());
+      setItems(await getCounters());
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Error al cargar secuencias.");
+      setError(e instanceof Error ? e.message : "Error al cargar contadores.");
     } finally {
       setLoading(false);
     }
@@ -67,7 +55,6 @@ export default function SequencesPage() {
 
   useEffect(() => {
     void reload();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [revalidator.state]);
 
   const handleFilter = (value: string) => {
@@ -75,15 +62,9 @@ export default function SequencesPage() {
     tableRef.current?.filter(value);
   };
 
-  const openAdd = () => navigate("/sequences/add");
-  const openEdit = (row: SequenceRecord) => {
-    if (row.readonly) {
-      setError("Las secuencias default no se editan. Crea una secuencia custom con la misma entidad para sobrescribirla.");
-      return;
-    }
-    navigate("/sequences/edit/" + encodeURIComponent(row.id));
-  };
-  const handleHide = () => navigate("/sequences");
+  const openAdd = () => navigate("/counters/add");
+  const openEdit = (row: CounterRecord) => navigate("/counters/edit/" + encodeURIComponent(row.id));
+  const handleHide = () => navigate("/counters");
 
   const handleSuccess = () => {
     void reload();
@@ -92,10 +73,6 @@ export default function SequencesPage() {
   const openDeleteConfirm = () => {
     const selected = tableRef.current?.getSelectedRows() ?? [];
     if (!selected.length) return;
-    if (selected.some((s) => s.readonly)) {
-      setError("Las secuencias default no se pueden eliminar.");
-      return;
-    }
     setPendingDeleteIds(selected.map((s) => s.id));
   };
 
@@ -105,7 +82,7 @@ export default function SequencesPage() {
     setSaving(true);
     setError(null);
     try {
-      await Promise.all(ids.map((id) => deleteSequence(id)));
+      await Promise.all(ids.map((id) => deleteCounter(id)));
       tableRef.current?.clearSelectedRows();
       setPendingDeleteIds(null);
       await reload();
@@ -118,7 +95,7 @@ export default function SequencesPage() {
 
   return (
     <>
-      <DpContent title="SECUENCIAS" breadcrumbItems={["SISTEMA", "SECUENCIAS"]} onCreate={openAdd}>
+      <DpContent title="CONTADORES" breadcrumbItems={["SISTEMA", "CONTADORES"]} onCreate={openAdd}>
         <DpContentHeader
           filterValue={filterValue}
           onFilter={handleFilter}
@@ -127,37 +104,37 @@ export default function SequencesPage() {
           onDelete={openDeleteConfirm}
           deleteDisabled={selectedCount === 0 || saving}
           loading={isLoading}
-          filterPlaceholder="Filtrar por entidad, prefijo..."
+          filterPlaceholder="Filtrar por sequence ID..."
         />
 
         {error && <div className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm">{error}</div>}
 
-        <DpTable<SequenceRecord>
+        <DpTable<CounterRecord>
           ref={tableRef}
           data={items}
           loading={isLoading}
           tableDef={TABLE_DEF}
-          linkColumn="entity"
+          linkColumn="sequenceId"
           onDetail={openEdit}
           onEdit={openEdit}
           onSelectionChange={(rows) => setSelectedCount(rows.length)}
           showFilterInHeader={false}
-          emptyMessage="No hay secuencias disponibles."
+          emptyMessage="No hay contadores disponibles."
           emptyFilterMessage="No hay resultados para el filtro."
         />
       </DpContent>
 
       {dialogVisible && (
-        <SequenceDialog visible={dialogVisible} sequenceId={editId} onSuccess={handleSuccess} onHide={handleHide} />
+        <CounterDialog visible={dialogVisible} counterId={editId} onSuccess={handleSuccess} onHide={handleHide} />
       )}
 
       <DpConfirmDialog
         visible={pendingDeleteIds !== null}
         onHide={() => !saving && setPendingDeleteIds(null)}
-        title="Eliminar secuencias"
+        title="Eliminar contadores"
         message={
           pendingDeleteIds?.length
-            ? `¿Eliminar ${pendingDeleteIds.length} secuencia(s)? Esta acción no se puede deshacer.`
+            ? `¿Eliminar ${pendingDeleteIds.length} contador(es)? Esta acción no se puede deshacer.`
             : ""
         }
         confirmLabel="Eliminar"

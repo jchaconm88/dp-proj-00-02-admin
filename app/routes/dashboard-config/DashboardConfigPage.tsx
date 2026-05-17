@@ -9,9 +9,9 @@ import {
   DpTable,
   DpTColumn,
   type DpTableRef,
-  type DpTableDefColumn,
 } from "~/components/ui";
 import type { StatusSeverity } from "~/components/ui";
+import { moduleTableDef } from "~/data/system-modules";
 import { useAuth } from "~/lib/auth-context";
 import { getMyAdminUser } from "~/lib/admin-user.service";
 import { listAdminRoles } from "~/lib/admin-roles.service";
@@ -73,25 +73,16 @@ const VISIBLE_OPTIONS: Record<string, { label: string; severity: StatusSeverity 
   false: { label: "No", severity: "secondary" },
 };
 
-const CARDS_TABLE_DEF: DpTableDefColumn[] = [
-  { header: "Card Key", column: "cardKey", order: 1, display: true, filter: true, sort: true },
-  { header: "Título", column: "title", order: 2, display: true, filter: true, sort: true },
-  { header: "Metric Key", column: "metricKey", order: 3, display: true, filter: true, sort: true },
-  { header: "Target", column: "target", order: 4, display: true, filter: true, sort: true },
-  { header: "Orden", column: "order", order: 5, display: true, filter: true, sort: true },
-  { header: "Visible", column: "visible", order: 6, display: true, filter: true, type: "status", typeOptions: VISIBLE_OPTIONS },
-  { header: "Source", column: "source", order: 7, display: true, filter: true, type: "status", typeOptions: SOURCE_OPTIONS },
-  { header: "Readonly", column: "readonly", order: 8, display: true, filter: true, type: "status", typeOptions: READONLY_OPTIONS },
-];
+const CARDS_TABLE_DEF = moduleTableDef("card-definition", {
+  visible: VISIBLE_OPTIONS,
+  source: SOURCE_OPTIONS,
+  readonly: READONLY_OPTIONS,
+}).map((c) => ({ ...c, sort: true }));
 
-const CHARTS_TABLE_DEF: DpTableDefColumn[] = [
-  { header: "Chart Key", column: "chartKey", order: 1, display: true, filter: true, sort: true },
-  { header: "Título", column: "title", order: 2, display: true, filter: true, sort: true },
-  { header: "Tipo", column: "chartType", order: 3, display: true, filter: true, sort: true },
-  { header: "Target", column: "target", order: 4, display: true, filter: true, sort: true },
-  { header: "Source", column: "source", order: 5, display: true, filter: true, type: "status", typeOptions: SOURCE_OPTIONS },
-  { header: "Readonly", column: "readonly", order: 6, display: true, filter: true, type: "status", typeOptions: READONLY_OPTIONS },
-];
+const CHARTS_TABLE_DEF = moduleTableDef("chart-definition", {
+  source: SOURCE_OPTIONS,
+  readonly: READONLY_OPTIONS,
+}).map((c) => ({ ...c, sort: true }));
 
 // ─── Flatten helpers ──────────────────────────────────────────────────────────
 

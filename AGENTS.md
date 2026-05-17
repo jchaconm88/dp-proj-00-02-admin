@@ -107,6 +107,147 @@ Alineada con **`dp-proj-00-02-web`**: dominio bajo **carpetas**, no un único `*
 
 - Los `*.service.ts` de `app/features/**` deben hablar con backend usando `adminFetch`.
 - Los componentes/rutas importan **solo** desde `features/...` (no hablan HTTP directo).
+- Global search admin: consumir `GET /admin/system/entity-search-index?accountId=...` y `POST /admin/system/entity-search-index/rebuild?accountId=...`.
+- Dashboard admin: consumir `GET /admin/dashboard/snapshot?accountId=...&period=YYYY-MM` y usar `POST /admin/dashboard/recompose` solo para recomposicion manual/operativa.
+- Nuevos modulos: seguir `../MODULOS_NUEVOS_COMPATIBILIDAD.md` para mantener compatibilidad con search/dashboard existentes.
+
+## Convenciones de código (alineadas con Web)
+
+### Import paths — barrel único `~/components/ui`
+
+Todos los componentes Dp* (DpContent, DpTable, DpInput, DpConfirmDialog, DpCodeInput, DpContentSet, etc.) se importan desde el barrel `~/components/ui`. **No** importar desde rutas individuales (`~/components/DpInput`, `~/components/DpContent`, etc.).
+
+```tsx
+// ✅ Correcto
+import { DpContent, DpContentHeader, DpTable, DpConfirmDialog, DpInput, DpContentSet } from "~/components/ui";
+import type { DpTableRef, StatusSeverity } from "~/components/ui";
+
+// ❌ Incorrecto
+import { DpInput } from "~/components/DpInput";
+import { DpContent } from "~/components/DpContent";
+```
+
+### moduleTableDef — fuente única de columnas
+
+**NUNCA** definir `TABLE_DEF` manualmente en las páginas. Usar siempre `moduleTableDef` desde `~/data/system-modules`. El catálogo `SYSTEM_MODULES_CATALOG` en ese archivo es la única fuente de verdad para las columnas de cada módulo.
+
+```ts
+import { moduleTableDef } from "~/data/system-modules";
+
+// Sin typeOptions (columnas sin status/label)
+const TABLE_DEF = moduleTableDef("admin-user");
+
+// Con typeOptions para columnas con format: "status"
+const TABLE_DEF = moduleTableDef("subscription", { status: STATUS_OPTIONS });
+
+// Con sort habilitado por defecto
+const TABLE_DEF = moduleTableDef("plan", { active: ACTIVE_OPTIONS }).map((c) => ({ ...c, sort: true }));
+```
+
+### Diálogos — patrón de montaje con `{condition && <Component>}`
+
+Todos los diálogos de formulario (create/edit) deben envolverse con `{condition && <Component>}` para que se desmonten al cerrar, reseteando automáticamente su estado interno.
+
+```tsx
+// ✅ Correcto — se desmonta al ocultar
+const dialogVisible = isAdd || !!editId;
+
+{dialogVisible && (
+  <MyDialog
+    visible={dialogVisible}
+    item={dialogItem}
+    onHide={handleHide}
+    onSaved={handleSaved}
+  />
+)}
+
+// ❌ Incorrecto — el diálogo permanece montado
+<MyDialog visible={dialogVisible} ... />
+```
+
+### Diálogos — archivos separados
+
+Cada formulario modal debe vivir en un archivo `*Dialog.tsx` separado. **No** definir diálogos inline en el mismo archivo que la página.
+
+### Routes — uso de `layout()` en lugar de `route("")`
+
+Las rutas agrupadas bajo el shell autenticado deben usar `layout("routes/Dashboard.tsx", [...])` en lugar de `route("", "routes/Dashboard.tsx", [...])`.
+
+```ts
+// ✅ Correcto
+import { route, index, layout } from "@react-router/dev/routes";
+export default [
+  // public routes: login, registro, onboarding
+  layout("routes/Dashboard.tsx", [
+    index("routes/DashboardHome.tsx"),
+    route("roles", "routes/system/RolesPage.tsx"),
+    // ...
+  ]),
+];
+
+// ❌ Incorrecto
+route("", "routes/Dashboard.tsx", [ /* ... */ ]);
+```
+
+### Routes — `{ id }` para desambiguación
+
+Cuando dos rutas apuntan al mismo componente (p. ej. `plans` + `plans/add`), usar la propiedad `id` para desambiguar:
+
+```ts
+route("plans", "routes/system/plans/PlansPage.tsx"),
+route("plans/add", "routes/system/plans/PlansPage.tsx", { id: "routes/system/plans/PlansPage/add" }),
+```
+
+### Componentes disponibles
+
+| Componente | Uso |
+|---|---|
+| `DpContent` | Contenedor de página de lista |
+| `DpContentHeader` | Barra de herramientas (filtro, crear, eliminar, recargar) |
+| `DpContentInfo` | Contenedor de página de detalle (con botón back) |
+| `DpContentSet` | Dialog/modal para formularios (create/edit) |
+| `DpConfirmDialog` | Modal de confirmación antes de eliminar |
+| `DpTable<T>` | Tabla con selección, filtro, acciones |
+| `DpInput` | Campo de formulario unificado (type: input, select, check, number, date) |
+| `DpCodeInput` | Campo de código con secuencia automática |
+
+### DpContentSet — carga y errores centralizados
+
+```tsx
+<DpContentSet
+  title="..."
+  visible={visible}
+  onHide={onHide}
+  onCancel={onHide}
+  onSave={save}
+  saving={saving || isNavigating}
+  saveDisabled={!valid || isNavigating}
+  showLoading={loading}
+  showError={!!error}
+  errorMessage={error ?? ""}
+>
+  {/* solo campos del formulario */}
+</DpContentSet>
+```
+
+### DpInput
+
+```tsx
+<DpInput type="input" label="Nombre" name="name" value={name} onChange={setName} />
+<DpInput type="select" label="Estado" name="status" value={status} onChange={setStatus} options={opts} />
+<DpInput type="check" label="Activo" name="active" value={active} onChange={setActive} />
+```
+
+### Reglas Generales
+
+- **Alias `~/`** apunta a `app/` — usar siempre paths con `~/` en imports
+- **`useNavigation` en todos los diálogos** — `saving={saving || isNavigating}`
+- **TypeScript estricto** — tipar todos los parámetros y retornos de servicios
+- **Rutas configuradas en `routes.ts`** — NUNCA dependas del naming del archivo para el routing
+- **Páginas de Detalle / Sub-módulos** — usa `<DpContentInfo>` (con prop `onBack`) para navegación de retroceso estándar
+- **Confirmar borrado** — usar siempre `DpConfirmDialog`; nunca `confirm()` del navegador
+- **`meta()` en todas las rutas** — incluidas las rutas hijo (add/edit)
+- **Tests**: el proyecto usa vitest; correr `npm run test` después de cambios en `routes.ts`
 
 ## Notas de DEV (CORS/proxy)
 

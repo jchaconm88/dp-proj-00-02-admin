@@ -1,16 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLoaderData, useNavigate, useNavigation, useRevalidator } from "react-router";
 import { DpConfirmDialog, DpContent, DpContentHeader, DpTable, type DpTableRef } from "~/components/ui";
-import type { DpTableDefColumn } from "~/components/ui";
+import { moduleTableDef } from "~/data/system-modules";
 import { useAuth } from "~/lib/auth-context";
 import { getMyAdminUser } from "~/lib/admin-user.service";
 import { deleteRole, listRoles, type RoleRecord } from "~/features/system/roles";
 import RoleDialog from "./RoleDialog";
 
-const TABLE_DEF: DpTableDefColumn[] = [
-  { header: "Nombre", column: "name", order: 1, display: true, filter: true, sort: true },
-  { header: "Descripción", column: "description", order: 2, display: true, filter: true, sort: true },
-];
+const TABLE_DEF = moduleTableDef("role").map((c) => ({ ...c, sort: true }));
 
 export async function clientLoader() {
   return {};
@@ -154,16 +151,18 @@ export default function RolesPage() {
         />
       </DpContent>
 
-      <RoleDialog
-        visible={dialogVisible}
-        accountId={accountId}
-        roleId={editingId}
-        onSuccess={async () => {
-          setDialogVisible(false);
-          await reload();
-        }}
-        onHide={() => setDialogVisible(false)}
-      />
+      {dialogVisible && (
+        <RoleDialog
+          visible={dialogVisible}
+          accountId={accountId}
+          roleId={editingId}
+          onSuccess={async () => {
+            setDialogVisible(false);
+            await reload();
+          }}
+          onHide={() => setDialogVisible(false)}
+        />
+      )}
 
       <DpConfirmDialog
         visible={pendingDeleteIds !== null}

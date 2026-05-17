@@ -2,16 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import { Checkbox } from "primereact/checkbox";
 import { DpContentInfo, DpContentHeader, DpTable } from "~/components/ui";
-import type { DpTableDefColumn, DpTableRef } from "~/components/ui";
+import type { DpTableRef } from "~/components/ui";
+import { moduleTableDef } from "~/data/system-modules";
 import { getCompanyRoleById, updateCompanyRole, type CompanyRoleRecord } from "~/features/platform/web-roles";
 import type { RolePermissions } from "~/features/system/roles/roles.types";
 import CompanyRoleDialog from "./CompanyRoleDialog";
 import CompanyRolePermissionDialog from "./CompanyRolePermissionDialog";
 
-const PERMISSIONS_TABLE_DEF: DpTableDefColumn[] = [
-  { header: "Módulo", column: "moduleId", order: 1, display: true, filter: true },
-  { header: "Permisos", column: "permissions", order: 2, display: true, filter: true },
-];
+const PERMISSIONS_TABLE_DEF = moduleTableDef("company-role-permission");
 
 const FULL_ACCESS_MODULE = "*";
 const FULL_ACCESS_CODE = "*";
@@ -229,23 +227,27 @@ export default function CompanyRolesDetail() {
           />
         </section>
 
-        <CompanyRolePermissionDialog
-          visible={permissionDialogOpen}
-          roleId={roleId || null}
-          companyId={role.companyId || companyIdFromQuery || null}
-          readOnly={!!role.readonly}
-          editModuleId={permissionEditModuleId}
-          onSuccess={async () => { setPermissionDialogOpen(false); void loadRole(); }}
-          onHide={() => setPermissionDialogOpen(false)}
-        />
+        {permissionDialogOpen && (
+          <CompanyRolePermissionDialog
+            visible={permissionDialogOpen}
+            roleId={roleId || null}
+            companyId={role.companyId || companyIdFromQuery || null}
+            readOnly={!!role.readonly}
+            editModuleId={permissionEditModuleId}
+            onSuccess={async () => { setPermissionDialogOpen(false); void loadRole(); }}
+            onHide={() => setPermissionDialogOpen(false)}
+          />
+        )}
 
-        <CompanyRoleDialog
-          visible={editRoleOpen}
-          companyId={role.companyId}
-          roleId={roleId || null}
-          onSuccess={() => { setEditRoleOpen(false); void loadRole(); }}
-          onHide={() => setEditRoleOpen(false)}
-        />
+        {editRoleOpen && (
+          <CompanyRoleDialog
+            visible={editRoleOpen}
+            companyId={role.companyId}
+            roleId={roleId || null}
+            onSuccess={() => { setEditRoleOpen(false); void loadRole(); }}
+            onHide={() => setEditRoleOpen(false)}
+          />
+        )}
       </div>
     </DpContentInfo>
   );

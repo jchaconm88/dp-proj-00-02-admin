@@ -1,4 +1,4 @@
-import { route, index } from "@react-router/dev/routes";
+import { route, index, layout } from "@react-router/dev/routes";
 
 export default [
   route("login", "routes/Login.tsx"),
@@ -6,7 +6,7 @@ export default [
   route("onboarding", "routes/OnboardingLayout.tsx", [
     index("routes/Onboarding.tsx"),
   ]),
-  route("", "routes/Dashboard.tsx", [
+  layout("routes/Dashboard.tsx", [
     index("routes/DashboardHome.tsx"),
     route("billing/usage", "routes/BillingUsage.tsx"),
     route("users", "routes/system/UsersPage.tsx"),
@@ -15,6 +15,10 @@ export default [
     route("sequences", "routes/system/sequences/SequencesPage.tsx", [
       route("add", "routes/system/sequences/SequenceAdd.tsx"),
       route("edit/:id", "routes/system/sequences/SequenceEdit.tsx"),
+    ]),
+    route("counters", "routes/system/counters/CountersPage.tsx", [
+      route("add", "routes/system/counters/CounterAdd.tsx"),
+      route("edit/:id", "routes/system/counters/CounterEdit.tsx"),
     ]),
     route("platform/users", "routes/platform/users/UsersPage.tsx", [
       route("add", "routes/platform/users/UserAdd.tsx"),

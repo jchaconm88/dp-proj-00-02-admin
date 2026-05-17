@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import { useLoaderData, useNavigation, useRevalidator } from "react-router";
 import { DpCard, DpContent, DpTable } from "~/components/ui";
-import type { DpTableDefColumn, StatusSeverity } from "~/components/ui";
+import type { StatusSeverity } from "~/components/ui";
+import { moduleTableDef } from "~/data/system-modules";
 import { adminFetch } from "~/lib/backend-client";
 import type { AccountRecord } from "~/features/platform/accounts/accounts.types";
 import type { SubscriptionRecord } from "~/features/platform/subscriptions/subscriptions.types";
@@ -15,22 +16,12 @@ type AccountDetailsLoaderData = {
   users: UserRecord[];
 };
 
-const USERS_TABLE_DEF: DpTableDefColumn[] = [
-  { header: "Email", column: "email", order: 1, display: true, filter: true, sort: true },
-  { header: "Nombre", column: "displayName", order: 2, display: true, filter: true, sort: true },
-  {
-    header: "Estado",
-    column: "status",
-    order: 3,
-    display: true,
-    filter: true,
-    type: "status",
-    typeOptions: {
-      active: { label: "Activo", severity: "success" as StatusSeverity },
-      inactive: { label: "Inactivo", severity: "secondary" as StatusSeverity },
-    },
-  },
-];
+const STATUS_OPTIONS: Record<string, { label: string; severity: StatusSeverity }> = {
+  active: { label: "Activo", severity: "success" },
+  inactive: { label: "Inactivo", severity: "secondary" },
+};
+
+const USERS_TABLE_DEF = moduleTableDef("account-user", { status: STATUS_OPTIONS }).map((c) => ({ ...c, sort: true }));
 
 export function meta() {
   return [{ title: "Cuenta" }];

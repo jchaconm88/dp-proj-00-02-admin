@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import {
   useLoaderData,
   useMatch,
@@ -9,16 +9,14 @@ import {
 import { DpContent, DpContentHeader } from "~/components/ui";
 import { DpTable, type DpTableRef } from "~/components/ui";
 import { DpConfirmDialog } from "~/components/ui";
-import { DpInput } from "~/components/ui";
-import { DpContentSet } from "~/components/ui";
 import {
   getPlans,
-  createPlan,
-  updatePlan,
   deletePlan,
 } from "~/features/platform/saas-plans/saas-plans.service";
 import type { SaasPlanRecord } from "~/features/platform/saas-plans/saas-plans.types";
-import type { DpTableDefColumn, StatusSeverity } from "~/components/ui";
+import type { StatusSeverity } from "~/components/ui";
+import { moduleTableDef } from "~/data/system-modules";
+import PlanDialog from "./PlanDialog";
 
 // ─── Table definition ────────────────────────────────────────────────────────
 
@@ -27,148 +25,13 @@ const ACTIVE_OPTIONS: Record<string, { label: string; severity: StatusSeverity }
   false: { label: "Inactivo", severity: "secondary" },
 };
 
-const PLANS_TABLE_DEF: DpTableDefColumn[] = [
-  { header: "ID", column: "id", order: 1, display: true, filter: true, sort: true },
-  { header: "Plan ID", column: "planId", order: 2, display: true, filter: true, sort: true },
-  { header: "Nombre", column: "name", order: 3, display: true, filter: true, sort: true },
-  {
-    header: "Activo",
-    column: "active",
-    order: 4,
-    display: true,
-    filter: true,
-    type: "status",
-    typeOptions: ACTIVE_OPTIONS,
-  },
-];
+const PLANS_TABLE_DEF = moduleTableDef("plan", { active: ACTIVE_OPTIONS }).map((c) => ({ ...c, sort: true }));
 
 // ─── Loader ───────────────────────────────────────────────────────────────────
 
 export async function clientLoader() {
   const items = await getPlans();
   return { items };
-}
-
-// ─── PlanDialog ───────────────────────────────────────────────────────────────
-
-interface PlanDialogProps {
-  visible: boolean;
-  item: SaasPlanRecord | null;
-  onHide: () => void;
-  onSaved: () => void;
-}
-
-function PlanDialog({ visible, item, onHide, onSaved }: PlanDialogProps) {
-  const isEdit = item !== null;
-
-  const [id, setId] = useState("");
-  const [planId, setPlanId] = useState("");
-  const [name, setName] = useState("");
-  const [active, setActive] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Reset form when dialog opens/closes or item changes
-  useEffect(() => {
-    if (!visible) return;
-    setError(null);
-    if (item) {
-      setId(item.id);
-      setPlanId(item.planId);
-      setName(item.name);
-      setActive(item.active);
-    } else {
-      setId("");
-      setPlanId("");
-      setName("");
-      setActive(true);
-    }
-  }, [visible, item]);
-
-  const valid = id.trim().length > 0 && planId.trim().length > 0 && name.trim().length > 0;
-
-  const handleSave = async () => {
-    if (!valid) return;
-    setSaving(true);
-    setError(null);
-    try {
-      if (isEdit) {
-        await updatePlan(item.id, {
-          planId: planId.trim(),
-          name: name.trim(),
-          active,
-        });
-      } else {
-        await createPlan({
-          id: id.trim(),
-          planId: planId.trim(),
-          name: name.trim(),
-          active,
-        });
-      }
-      onSaved();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Error al guardar");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const ACTIVE_SELECT_OPTIONS = [
-    { label: "Activo", value: "true" },
-    { label: "Inactivo", value: "false" },
-  ];
-
-  return (
-    <DpContentSet
-      title={isEdit ? "Editar plan" : "Nuevo plan"}
-      recordId={isEdit ? item.id : null}
-      visible={visible}
-      onHide={onHide}
-      onCancel={onHide}
-      onSave={handleSave}
-      saving={saving}
-      saveDisabled={!valid}
-      showError={!!error}
-      errorMessage={error ?? ""}
-    >
-      <div className="flex flex-col gap-4 pt-2">
-        <DpInput
-          type="input"
-          label="ID"
-          name="planDocId"
-          value={id}
-          onChange={setId}
-          disabled={isEdit}
-          placeholder="Identificador único del documento"
-        />
-        <DpInput
-          type="input"
-          label="Plan ID"
-          name="planId"
-          value={planId}
-          onChange={setPlanId}
-          placeholder="Identificador del plan (ej. basic, pro)"
-        />
-        <DpInput
-          type="input"
-          label="Nombre"
-          name="planName"
-          value={name}
-          onChange={setName}
-          placeholder="Nombre del plan"
-        />
-        <DpInput
-          type="select"
-          label="Activo"
-          name="planActive"
-          value={String(active)}
-          onChange={(v) => setActive(v === "true")}
-          options={ACTIVE_SELECT_OPTIONS}
-        />
-      </div>
-    </DpContentSet>
-  );
 }
 
 // ─── PlansPage ────────────────────────────────────────────────────────────────
@@ -265,12 +128,14 @@ export default function PlansPage() {
         />
       </DpContent>
 
-      <PlanDialog
-        visible={showDialog}
-        item={dialogItem}
-        onHide={handleHide}
-        onSaved={handleSaved}
-      />
+      {showDialog && (
+        <PlanDialog
+          visible={showDialog}
+          item={dialogItem}
+          onHide={handleHide}
+          onSaved={handleSaved}
+        />
+      )}
 
       <DpConfirmDialog
         visible={pendingDeleteIds !== null}

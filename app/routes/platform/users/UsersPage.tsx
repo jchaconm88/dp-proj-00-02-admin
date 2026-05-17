@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLoaderData, useNavigation, useRevalidator } from "react-router";
 import { DpConfirmDialog, DpContent, DpContentHeader, DpTable, type DpTableRef } from "~/components/ui";
-import type { DpTableDefColumn, StatusSeverity } from "~/components/ui";
+import type { StatusSeverity } from "~/components/ui";
+import { moduleTableDef } from "~/data/system-modules";
 import { useAuth } from "~/lib/auth-context";
 import { getMyAdminUser } from "~/lib/admin-user.service";
 import { deleteWebAppUser, listWebAppUsers, type WebAppUserRecord } from "~/features/platform/web-users";
@@ -13,20 +14,7 @@ const STATUS_OPTIONS: Record<string, { label: string; severity: StatusSeverity }
   invited: { label: "Invitado", severity: "warning" },
 };
 
-const TABLE_DEF: DpTableDefColumn[] = [
-  { header: "ID", column: "id", order: 1, display: true, filter: true, sort: true },
-  { header: "Email", column: "email", order: 2, display: true, filter: true, sort: true },
-  { header: "Nombre", column: "displayName", order: 3, display: true, filter: true, sort: true },
-  {
-    header: "Estado",
-    column: "status",
-    order: 4,
-    display: true,
-    filter: true,
-    type: "status",
-    typeOptions: STATUS_OPTIONS,
-  },
-];
+const TABLE_DEF = moduleTableDef("web-user", { status: STATUS_OPTIONS }).map((c) => ({ ...c, sort: true }));
 
 export async function clientLoader() {
   return {};
@@ -162,16 +150,18 @@ export default function WebUsersPage() {
         />
       </DpContent>
 
-      <UserDialog
-        visible={dialogVisible}
-        userIdToEdit={editingId}
-        onSuccess={(pw) => {
-          setDialogVisible(false);
-          if (pw) setGeneratedPassword(pw);
-          void reload();
-        }}
-        onHide={() => setDialogVisible(false)}
-      />
+      {dialogVisible && (
+        <UserDialog
+          visible={dialogVisible}
+          userIdToEdit={editingId}
+          onSuccess={(pw) => {
+            setDialogVisible(false);
+            if (pw) setGeneratedPassword(pw);
+            void reload();
+          }}
+          onHide={() => setDialogVisible(false)}
+        />
+      )}
 
       {generatedPassword && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">

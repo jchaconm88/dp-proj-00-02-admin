@@ -8,8 +8,8 @@ import {
   DpContentHeader,
   DpTable,
   DpTColumn,
-  type DpTableDefColumn,
 } from "~/components/ui";
+import { moduleTableDef } from "~/data/system-modules";
 import { useAuth } from "~/lib/auth-context";
 import { getMyAdminUser } from "~/lib/admin-user.service";
 import { listAdminRoles } from "~/lib/admin-roles.service";
@@ -37,15 +37,15 @@ interface ChartConfigItem {
 
 // ─── Table definitions ────────────────────────────────────────────────────────
 
-const CARDS_TABLE_DEF: DpTableDefColumn[] = [
-  { header: "Título", column: "title", order: 1, display: true, filter: true, sort: true },
-  { header: "Visible", column: "visible", order: 2, display: true },
-];
+const CARDS_TABLE_DEF = moduleTableDef("card-override").map((c) => {
+  if (c.column === "visible") return c;
+  return { ...c, sort: true };
+});
 
-const CHARTS_TABLE_DEF: DpTableDefColumn[] = [
-  { header: "Título", column: "title", order: 1, display: true, filter: true, sort: true },
-  { header: "Visible", column: "visible", order: 2, display: true },
-];
+const CHARTS_TABLE_DEF = moduleTableDef("chart-override").map((c) => {
+  if (c.column === "visible") return c;
+  return { ...c, sort: true };
+});
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 

@@ -10,7 +10,8 @@ import type { Route } from "./+types/CompanyUsersPage";
 import { DpContentHeader, DpContentInfo } from "~/components/ui";
 import { DpTable, type DpTableRef } from "~/components/ui";
 import { DpConfirmDialog } from "~/components/ui";
-import type { DpTableDefColumn, StatusSeverity } from "~/components/ui";
+import type { StatusSeverity } from "~/components/ui";
+import { moduleTableDef } from "~/data/system-modules";
 import CompanyUserDialog from "./CompanyUserDialog";
 
 export function meta({}: Route.MetaArgs) {
@@ -27,19 +28,7 @@ const STATUS_OPTIONS: Record<string, { label: string; severity: StatusSeverity }
   inactive: { label: "Inactivo", severity: "secondary" },
 };
 
-const TABLE_DEF: DpTableDefColumn[] = [
-  { header: "Usuario", column: "emailLabel", order: 1, display: true, filter: true, sort: true },
-  { header: "Roles", column: "rolesLabel", order: 2, display: true, filter: true, sort: true },
-  {
-    header: "Estado",
-    column: "status",
-    order: 3,
-    display: true,
-    filter: true,
-    type: "status",
-    typeOptions: STATUS_OPTIONS,
-  },
-];
+const TABLE_DEF = moduleTableDef("company-user", { status: STATUS_OPTIONS }).map((c) => ({ ...c, sort: true }));
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const companyId = String(params?.id ?? "").trim() || null;
@@ -194,13 +183,15 @@ export default function CompanyUsersPage() {
         emptyFilterMessage="No hay resultados para el filtro."
       />
 
-      <CompanyUserDialog
-        visible={dialogVisible}
-        companyId={loaderData.companyId}
-        companyUser={isAdd ? null : editingCompanyUser}
-        onSuccess={handleSuccess}
-        onHide={handleHide}
-      />
+      {dialogVisible && (
+        <CompanyUserDialog
+          visible={dialogVisible}
+          companyId={loaderData.companyId}
+          companyUser={isAdd ? null : editingCompanyUser}
+          onSuccess={handleSuccess}
+          onHide={handleHide}
+        />
+      )}
 
       <DpConfirmDialog
         visible={pendingDeleteIds !== null}
