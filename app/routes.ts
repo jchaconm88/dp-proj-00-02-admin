@@ -54,5 +54,8 @@ export default [
     route("dashboard-metrics", "routes/dashboard-config/DashboardMetricsPage.tsx"),
     route("dashboard-config", "routes/dashboard-config/DashboardConfigPage.tsx"),
     route("dashboard-overrides", "routes/dashboard-config/DashboardOverridesPage.tsx"),
+    route("platform/api-docs", "routes/platform/api-docs/ApiDocsPage.tsx"),
+    route("platform/integration-credentials", "routes/platform/integration-credentials/IntegrationCredentialsPage.tsx"),
+    route("platform/integration-webhook-outbox", "routes/platform/integration-webhook-outbox/IntegrationWebhookOutboxPage.tsx"),
   ]),
 ];

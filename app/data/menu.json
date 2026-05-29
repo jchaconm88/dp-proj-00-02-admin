@@ -32,6 +32,9 @@
     "icon": "globe",
     "children": [
       { "title": "Empresas", "link": "/platform/companies", "permission": ["view", "company"] },
+      { "title": "Documentación API v1", "link": "/platform/api-docs", "permission": ["view", "integration-api-docs"] },
+      { "title": "Credenciales de integración", "link": "/platform/integration-credentials", "permission": ["view", "integration-credential"] },
+      { "title": "Webhooks fallidos", "link": "/platform/integration-webhook-outbox", "permission": ["view", "integration-webhook-outbox"] },
       { "title": "Billing (Uso)", "link": "/billing/usage", "permission": ["view", "billing"] },
       { "title": "Usuarios", "link": "/platform/users", "permission": ["view", "web-user"] },
       { "title": "Roles por empresa", "link": "/company-roles", "permission": ["view", "web-role"] }

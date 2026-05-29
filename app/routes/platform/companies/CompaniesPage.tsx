@@ -23,10 +23,19 @@ const STATUS_OPTIONS: Record<string, { label: string; severity: StatusSeverity }
   inactive: { label: "Inactivo", severity: "secondary" },
 };
 
-const COMPANIES_TABLE_DEF = moduleTableDef("company", { status: STATUS_OPTIONS }).map((c) => {
-  if (c.column === "companyUsers" || c.column === "companyLocations") return c;
-  return { ...c, sort: true };
-});
+const COMPANIES_TABLE_DEF = [
+  ...moduleTableDef("company", { status: STATUS_OPTIONS }).map((c) => {
+    if (c.column === "companyUsers" || c.column === "companyLocations") return c;
+    return { ...c, sort: true };
+  }),
+  {
+    header: "Integración",
+    column: "integrationCredentials",
+    order: 99,
+    display: true,
+    filter: false,
+  },
+];
 
 export async function clientLoader() {
   const items = await getCompanies();
@@ -153,6 +162,23 @@ export default function CompaniesPage() {
                 title="Sedes por empresa"
               >
                 <i className="pi pi-map-marker" />
+              </button>
+            )}
+          </DpTColumn>
+          <DpTColumn name="integrationCredentials">
+            {(row: CompanyRecord) => (
+              <button
+                type="button"
+                onClick={() =>
+                  navigate(
+                    `/platform/integration-credentials?companyId=${encodeURIComponent(row.id)}`
+                  )
+                }
+                className="p-button p-button-text p-button-rounded p-button-icon-only"
+                aria-label="Credenciales de integración"
+                title="Credenciales de integración"
+              >
+                <i className="pi pi-key" />
               </button>
             )}
           </DpTColumn>
