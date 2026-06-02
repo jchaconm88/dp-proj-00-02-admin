@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { generateRandomPassword } from "~/lib/generate-random-password";
 import { useNavigate } from "react-router";
 import { Stepper } from "primereact/stepper";
 import { StepperPanel } from "primereact/stepperpanel";
@@ -90,6 +91,8 @@ export default function OnboardingPage() {
   const [code, setCode] = useState("");
   const [firstWebUserEmail, setFirstWebUserEmail] = useState("");
   const [firstWebUserDisplayName, setFirstWebUserDisplayName] = useState("");
+  const [firstWebUserPassword, setFirstWebUserPassword] = useState("");
+  const [showFirstWebUserPassword, setShowFirstWebUserPassword] = useState(true);
   const [taxIdChecking, setTaxIdChecking] = useState(false);
   const [taxIdDuplicate, setTaxIdDuplicate] = useState(false);
 
@@ -207,13 +210,27 @@ export default function OnboardingPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accountId]);
 
+  useEffect(() => {
+    if (!isValidEmail(firstWebUserEmail)) {
+      setFirstWebUserPassword("");
+      return;
+    }
+    setFirstWebUserPassword((prev) => (prev.trim() ? prev : generateRandomPassword(16)));
+  }, [firstWebUserEmail]);
+
+  const regenerateFirstWebUserPassword = useCallback(() => {
+    setFirstWebUserPassword(generateRandomPassword(16));
+    setShowFirstWebUserPassword(true);
+  }, []);
+
   const canAccount = accountName.trim().length > 1;
   const canCompany =
     companyName.trim().length > 1 &&
     taxId.trim().length > 0 &&
     !taxIdDuplicate &&
     !taxIdChecking &&
-    isValidEmail(firstWebUserEmail);
+    isValidEmail(firstWebUserEmail) &&
+    firstWebUserPassword.trim().length >= 6;
   const canSubscription = Boolean(accountId); // se crea por defecto aunque no haya plan seleccionado
   const canWebInvite = isValidEmail(webEmail) && (webDisplayName.trim().length > 1);
 
@@ -260,7 +277,7 @@ export default function OnboardingPage() {
     setSaving(true);
     setError(null);
     try {
-      const out = await adminFetch<{ generatedPassword?: string }>("/admin/onboarding/bootstrap-web-tenant", {
+      await adminFetch("/admin/onboarding/bootstrap-web-tenant", {
         method: "POST",
         body: JSON.stringify({
           companyId: accountId,
@@ -270,12 +287,9 @@ export default function OnboardingPage() {
           code: code.trim() || undefined,
           webUserEmail: firstWebUserEmail.trim(),
           webUserDisplayName: firstWebUserDisplayName.trim(),
+          password: firstWebUserPassword.trim(),
         }),
       });
-      if (out.generatedPassword) {
-        setError(null);
-        alert(`Usuario creado. Contraseña generada: ${out.generatedPassword}\nGuárdala en un lugar seguro.`);
-      }
       stepperRef.current?.nextCallback();
     } catch (e) {
       const msg = e instanceof Error ? e.message : "No se pudo crear la empresa ni el usuario Web inicial";
@@ -422,6 +436,51 @@ export default function OnboardingPage() {
                     onChange={setFirstWebUserDisplayName}
                     placeholder="Nombre Apellido"
                   />
+                  {isValidEmail(firstWebUserEmail) && (
+                    <div className="flex flex-col gap-2">
+                      <label className="text-sm font-medium text-[var(--dp-on-surface)]">
+                        Contraseña
+                      </label>
+                      <p className="text-xs text-[var(--dp-on-surface-soft)]">
+                        Se genera automáticamente. Cópiala antes de guardar; no volverá a mostrarse después.
+                      </p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <input
+                          type={showFirstWebUserPassword ? "text" : "password"}
+                          value={firstWebUserPassword}
+                          onChange={(e) => setFirstWebUserPassword(e.target.value)}
+                          className="min-w-0 flex-1 rounded-lg border border-[var(--dp-outline-soft)] bg-white/60 px-3 py-2 font-mono text-sm text-[var(--dp-on-surface)] dark:bg-white/5"
+                          placeholder="Contraseña para el usuario"
+                          autoComplete="new-password"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowFirstWebUserPassword((p) => !p)}
+                          className="rounded-lg border border-[var(--dp-outline-soft)] px-2 py-2 text-sm hover:bg-white/50 dark:hover:bg-white/10"
+                          title={showFirstWebUserPassword ? "Ocultar" : "Mostrar"}
+                        >
+                          <i className={`pi ${showFirstWebUserPassword ? "pi-eye" : "pi-eye-slash"}`} />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={!firstWebUserPassword.trim()}
+                          onClick={() => void navigator.clipboard.writeText(firstWebUserPassword)}
+                          className="rounded-lg border border-[var(--dp-outline-soft)] px-3 py-2 text-xs font-bold hover:bg-white/50 dark:hover:bg-white/10 disabled:opacity-60"
+                        >
+                          <i className="pi pi-copy mr-1" />
+                          Copiar
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={regenerateFirstWebUserPassword}
+                        className="self-start text-xs text-[var(--dp-primary)] hover:underline"
+                      >
+                        <i className="pi pi-refresh mr-1" />
+                        Generar nueva contraseña
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="flex justify-between gap-2">

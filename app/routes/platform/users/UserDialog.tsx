@@ -7,27 +7,13 @@ import {
   updateWebAppUser,
   type WebAppUserRecord,
 } from "~/features/platform/web-users";
+import { generateRandomPassword } from "~/lib/generate-random-password";
 
 const STATUS_OPTIONS: { label: string; value: WebAppUserRecord["status"] }[] = [
   { label: "Activo", value: "active" },
   { label: "Inactivo", value: "inactive" },
   { label: "Invitado", value: "invited" },
 ];
-
-function generateRandomPassword(length: number = 16): string {
-  const lowercase = "abcdefghijklmnopqrstuvwxyz";
-  const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const digits = "0123456789";
-  const symbols = "!@#$%^&*";
-  const all = lowercase + uppercase + digits + symbols;
-  const bytes = new Uint8Array(length);
-  crypto.getRandomValues(bytes);
-  let password = "";
-  for (let i = 0; i < length; i++) {
-    password += all[bytes[i] % all.length];
-  }
-  return password;
-}
 
 export default function WebUserDialog(props: {
   visible: boolean;
