@@ -21,13 +21,20 @@ export async function clientLoader({ request }: LoaderFunctionArgs) {
   return { items, companyId, companies };
 }
 
+async function revokeAndDeleteCredential(id: string) {
+  await revokeCredential(id);
+  await deleteCredential(id);
+}
+
 export default function IntegrationCredentialsPage() {
   const { items, companyId, companies } = useLoaderData<typeof clientLoader>();
   const revalidator = useRevalidator();
   const tableRef = useRef<DpTableRef<IntegrationCredentialRecord>>(null);
   const [showDialog, setShowDialog] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<IntegrationCredentialRecord | null>(null);
+  const [selectedCount, setSelectedCount] = useState(0);
+  const [pendingDeleteIds, setPendingDeleteIds] = useState<string[] | null>(null);
+  const [deleteSaving, setDeleteSaving] = useState(false);
   const [filterValue, setFilterValue] = useState("");
 
   const handleEdit = (item: IntegrationCredentialRecord) => {
@@ -40,16 +47,24 @@ export default function IntegrationCredentialsPage() {
     setShowDialog(true);
   };
 
-  const handleDelete = async () => {
-    if (!deleteTarget) return;
+  const openDeleteConfirm = () => {
+    const selected = tableRef.current?.getSelectedRows() ?? [];
+    if (!selected.length) return;
+    setPendingDeleteIds(selected.map((row) => row.id));
+  };
+
+  const handleConfirmDelete = async () => {
+    const ids = pendingDeleteIds;
+    if (!ids?.length) return;
+    setDeleteSaving(true);
     try {
-      await revokeCredential(deleteTarget.id);
-      await deleteCredential(deleteTarget.id);
-    } catch {
-      await revokeCredential(deleteTarget.id);
+      await Promise.all(ids.map((id) => revokeAndDeleteCredential(id)));
+      tableRef.current?.clearSelectedRows();
+      setPendingDeleteIds(null);
+      revalidator.revalidate();
+    } finally {
+      setDeleteSaving(false);
     }
-    setDeleteTarget(null);
-    revalidator.revalidate();
   };
 
   return (
@@ -72,8 +87,10 @@ export default function IntegrationCredentialsPage() {
           }}
           onLoad={() => revalidator.revalidate()}
           showCreateButton={false}
+          onDelete={companyId ? openDeleteConfirm : undefined}
+          deleteDisabled={selectedCount === 0 || deleteSaving}
           filterPlaceholder="Filtrar credenciales…"
-          loading={revalidator.state === "loading"}
+          loading={revalidator.state === "loading" || deleteSaving}
         />
         <DpTable<IntegrationCredentialRecord>
           ref={tableRef}
@@ -81,7 +98,7 @@ export default function IntegrationCredentialsPage() {
           loading={revalidator.state === "loading"}
           tableDef={TABLE_DEF}
           onEdit={companyId ? handleEdit : undefined}
-          onDelete={companyId ? (item) => setDeleteTarget(item) : undefined}
+          onSelectionChange={(rows) => setSelectedCount(rows.length)}
           showFilterInHeader={false}
           emptyMessage={
             companyId
@@ -110,12 +127,17 @@ export default function IntegrationCredentialsPage() {
       )}
 
       <DpConfirmDialog
-        visible={!!deleteTarget}
-        title="Revocar credencial"
-        message="¿Está seguro de revocar y eliminar esta credencial? Esta acción no se puede deshacer."
-        onHide={() => setDeleteTarget(null)}
-        onConfirm={handleDelete}
+        visible={pendingDeleteIds !== null}
+        title="Revocar credenciales"
+        message={
+          pendingDeleteIds?.length
+            ? `¿Revocar y eliminar ${pendingDeleteIds.length} credencial(es)? Esta acción no se puede deshacer.`
+            : ""
+        }
+        onHide={() => !deleteSaving && setPendingDeleteIds(null)}
+        onConfirm={handleConfirmDelete}
         severity="danger"
+        loading={deleteSaving}
       />
     </>
   );
